@@ -6,38 +6,45 @@ The product bet is simple:
 
 > Important information can be extracted from chaotic social chat better than users can find it manually.
 
-The app should feel like a social group chat first. The scoring system, Important feed, Catch Up view, and audit tools exist to prove whether the algorithm can find what mattered inside messy conversation.
+CatchUp should feel like a real social group chat first. The scoring system, Important feed, Catch Up view, and audit tools exist to prove whether the app can find what mattered inside messy conversation.
 
-## Sprint 1 Status
+## Current Status
 
-Current Sprint 1 foundation includes:
+Sprint 2 is complete enough to pause UI polish and move into Sprint 3.
 
-- Real-time group chat with Socket.IO
+The app now includes:
+
+- Mobile-first group chat shell
+- Frontend auth scaffolding with local/demo session state
+- Logged-out landing/auth screen
+- Logged-in group dashboard
+- Create group and join group by invite code
+- Invite code copy/share behind the chat menu
+- Real-time chat with Socket.IO
 - SQLite persistence
-- Username-based entry without auth
-- Create group
-- Join group with invite code
-- Saved-chat homepage by username
-- Message history
-- Message reactions
-- Rule-based message scoring
-- Reaction score boosts
-- Important tab
+- Saved groups by username
+- Message timestamps and date dividers
+- Online presence shown as "In chat now"
+- Lightweight profile cards for people currently in chat
+- Typing indicators
+- Message reactions with a larger emoji tray
+- Reply UI with quoted reply previews
 - Catch Up tab
-- Catch-up feedback storage
+- Important tab with readable labels
 - Internal audit page
+- Rule-based scoring and categorization foundation
 
 Still intentionally rough:
 
-- No real authentication
+- No real authentication yet
 - No production hosting
-- No mobile app
+- No mobile app wrapper
+- No push notifications
 - No AI summaries
-- No moderation
-- No file uploads
-- No polished onboarding
+- No moderation tools
+- Scoring/categorization still needs serious Sprint 3 work
 
-See [ROADMAP.md](./ROADMAP.md) for the full product plan.
+See [ROADMAP.md](./ROADMAP.md) for the broader product plan.
 
 ## Run Locally
 
@@ -53,7 +60,7 @@ Start the app:
 npm start
 ```
 
-On this machine, VS Code is already using port `5500`, so CatchUp defaults to:
+CatchUp defaults to:
 
 ```text
 http://localhost:5501
@@ -74,40 +81,59 @@ http://localhost:5501/audit.html
 ## Demo Flow
 
 1. Open `http://localhost:5501`.
-2. Enter a username, for example `Erik`.
-3. Join the default group with invite code `KETCHUP`, or create a new group.
-4. Send messages like:
+2. Continue with a demo username, for example `Erik`.
+3. Use `+ New` to create a group or join with an invite code.
+4. Open a group from the dashboard.
+5. Send messages like:
 
 ```text
 lol
+yo
 need 3 sober drivers tonight
 formal tickets due tomorrow
 who's going downtown Friday?
 party starts at 9
 ```
 
-5. Open the Important tab to see high-scoring messages.
-6. Leave and rejoin the group to trigger Catch Up behavior.
-7. Open `/audit.html` to inspect scores, matched rules, and manual ratings.
+6. Hover or tap a message bubble to react, copy, or reply.
+7. Use the three-dot chat menu to copy/share the invite code.
+8. Open Important to see high-scoring messages.
+9. Leave and rejoin the group to trigger Catch Up behavior.
+10. Open `/audit.html` to inspect scores, matched rules, and manual ratings.
+
+## Auth State
+
+Auth is frontend scaffolding for now.
+
+The main client state is organized around:
+
+- `currentUser`
+- `isAuthenticated`
+- `authMode`
+- `groups`
+- `activeGroupId`
+
+Demo sessions are stored locally. Real backend auth should replace the local/demo session functions in `public/app.js` later.
 
 ## Project Structure
 
 ```text
 .
-├── server.js                  # Express, Socket.IO, routes, persistence orchestration
-├── src/
-│   ├── db.js                  # SQLite setup and schema migration
-│   └── scoring.js             # Rule-based message scoring engine
-├── public/
-│   ├── index.html             # Main app shell
-│   ├── styles.css             # Main app styling
-│   ├── app.js                 # Main frontend logic
-│   ├── audit.html             # Internal audit page
-│   ├── audit.css              # Audit page styling
-│   └── audit.js               # Audit page frontend logic
-├── ROADMAP.md                 # Product roadmap and sprint plan
-├── start-catchup-5501.cmd     # Windows local launcher
-└── work/                      # Scratch scripts and local verification helpers
+|-- server.js                  # Express, Socket.IO, routes, persistence orchestration
+|-- src/
+|   |-- db.js                  # SQLite setup and schema migration
+|   `-- scoring.js             # Rule-based message scoring engine
+|-- public/
+|   |-- index.html             # Main app shell
+|   |-- styles.css             # Main app styling
+|   |-- app.js                 # Main frontend logic
+|   |-- audit.html             # Internal audit page
+|   |-- audit.css              # Audit page styling
+|   `-- audit.js               # Audit page frontend logic
+|-- ROADMAP.md                 # Product roadmap and sprint plan
+|-- start-catchup-5501.cmd     # Windows local launcher
+|-- start-catchup-5501.ps1     # Windows logged launcher
+`-- work/                      # Scratch scripts and local verification helpers
 ```
 
 ## Data Model
@@ -131,6 +157,8 @@ Main tables:
 - `catchup_items`
 - `catchup_feedback`
 - `signal_audits`
+
+Messages also support reply metadata through `reply_to_message_id`.
 
 Local database files should not be committed to GitHub. They are ignored by `.gitignore`.
 
@@ -162,17 +190,25 @@ Current categories:
 - `logistics`
 - `noise`
 
-Reaction boosts:
-
-- Pin: `+25`
-- Check: `+15`
-- Eyes: `+10`
-- Question: `+10`
-- Fire: `+8`
-- Laugh: `+0`
-- Skull: `+0`
-
 Reaction boosts are capped so viral noise does not automatically become important.
+
+## Sprint 3 Focus
+
+Sprint 3 should focus on really building the scoring and categorization algorithm.
+
+High-priority Sprint 3 work:
+
+- Improve `scoreMessage(text)` precision
+- Add stronger category detection
+- Expand and tune matched rules
+- Reduce false positives in Important
+- Better distinguish jokes/noise from logistics, plans, deadlines, and requests
+- Add test fixtures for realistic college/group-chat messages
+- Add automated tests for score thresholds and category output
+- Use audit data to compare algorithm output against manual labels
+- Make reaction boosts smarter without letting funny messages dominate
+
+The UI is now good enough to support early testing. The next product risk is whether CatchUp can reliably identify what mattered.
 
 ## Editing Guide
 
@@ -190,55 +226,6 @@ Common changes:
 After changing backend code, restart the server.
 
 After changing frontend code, hard-refresh the browser if stale UI appears.
-
-## GitHub Workflow
-
-Recommended first push:
-
-```bash
-git init
-git add .
-git commit -m "Build Sprint 1 CatchUp MVP foundation"
-```
-
-Then create a new empty GitHub repo and follow GitHub's `push an existing repository` instructions.
-
-Recommended branch habit after the first push:
-
-```bash
-git checkout -b sprint-2-social-polish
-```
-
-Useful commit style:
-
-```text
-Add saved-chat homepage
-Fix reaction scoring crash
-Add audit page foundation
-Tune message scoring rules
-```
-
-Do not commit:
-
-- `node_modules/`
-- `catchup.sqlite`
-- `catchup.sqlite-shm`
-- `catchup.sqlite-wal`
-- temporary logs
-- scratch verification output
-
-## Sprint 2 Candidate Work
-
-Good next targets:
-
-- Make the homepage feel more like a real inbox
-- Add clearer active group switching
-- Improve reaction UI polish
-- Add message context around Catch Up and Important items
-- Add manual audit save states and filters
-- Add CSV export for audit data
-- Add a small seed-data script for demos
-- Add automated tests for `scoreMessage`
 
 ## Product Boundary
 
