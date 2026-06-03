@@ -1,0 +1,12 @@
+node_modules/
+npm-debug.log*
+
+catchup.sqlite
+catchup.sqlite-shm
+catchup.sqlite-wal
+
+work/*.log
+work/*.tmp
+
+.DS_Store
+Thumbs.db

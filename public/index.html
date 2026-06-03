@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CatchUp MVP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="app">
+        <header class="topbar">
+          <div class="brand">
+            <div class="brand-mark">C</div>
+            <div>
+              <p>CatchUp</p>
+              <h1 id="groupName">Find what mattered in the noise.</h1>
+            </div>
+          </div>
+          <button class="online-button" id="onlineButton" type="button" aria-label="Show online users">
+            <span id="onlineCount">0</span>
+          </button>
+        </header>
+
+        <section class="entry" id="entryPanel">
+          <div class="entry-copy">
+            <p class="eyebrow">Group chat that survives itself</p>
+            <h2>Keep the chaos. Catch the important stuff.</h2>
+          </div>
+
+          <form class="entry-form" id="entryForm">
+            <label>
+              <span>Your name</span>
+              <input id="usernameInput" autocomplete="nickname" maxlength="28" placeholder="Erik" required />
+            </label>
+
+            <section class="home-groups" id="homeGroups">
+              <div class="home-groups-header">
+                <strong>Your chats</strong>
+                <button id="refreshGroups" type="button">Refresh</button>
+              </div>
+              <p class="home-groups-hint" id="homeGroupsHint">Enter your name to load saved chats.</p>
+              <div id="homeGroupsList"></div>
+            </section>
+
+            <label>
+              <span>Invite code</span>
+              <input id="inviteInput" maxlength="12" placeholder="KETCHUP" value="KETCHUP" />
+            </label>
+
+            <label>
+              <span>New group name</span>
+              <input id="groupInput" maxlength="48" placeholder="Create instead of joining" />
+            </label>
+
+            <div class="entry-actions">
+              <button type="submit" data-mode="join">Join group</button>
+              <button class="secondary" type="submit" data-mode="create">Create group</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="workspace hidden" id="workspace">
+          <section class="invite-strip">
+            <span id="inviteCode">Invite: KETCHUP</span>
+            <span id="scoreHint">Scores are quiet until they matter.</span>
+          </section>
+
+          <section class="catchup-banner hidden" id="catchupBanner">
+            <div>
+              <p class="eyebrow">Catch Up</p>
+              <h2 id="catchupTitle">Here’s what mattered.</h2>
+            </div>
+            <button id="openCatchup" type="button">View</button>
+          </section>
+
+          <section class="views">
+            <section class="view active" id="chatView" aria-label="Chat">
+              <div class="presence-feed" id="presenceFeed"></div>
+              <div class="messages" id="messages"></div>
+              <div class="typing" id="typing"></div>
+            </section>
+
+            <section class="view" id="catchupView" aria-label="Catch Up">
+              <div class="view-header">
+                <div>
+                  <p class="eyebrow">Catch Up</p>
+                  <h2 id="catchupHeading">You’re all caught up.</h2>
+                </div>
+              </div>
+              <div class="feed" id="catchupList"></div>
+              <div class="feedback hidden" id="catchupFeedback">
+                <p>Was this catch-up useful?</p>
+                <div>
+                  <button type="button" data-rating="yes">Yes</button>
+                  <button type="button" data-rating="kind_of">Kind of</button>
+                  <button type="button" data-rating="no">No</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="view" id="importantView" aria-label="Important">
+              <div class="view-header">
+                <div>
+                  <p class="eyebrow">Important</p>
+                  <h2>High-signal messages from the group.</h2>
+                </div>
+              </div>
+              <div class="feed" id="importantList"></div>
+            </section>
+          </section>
+
+          <form class="composer" id="messageForm">
+            <input id="messageInput" autocomplete="off" maxlength="1000" placeholder="Say anything..." />
+            <button type="submit">Send</button>
+          </form>
+
+          <nav class="bottom-nav" aria-label="Primary">
+            <button class="active" type="button" data-tab="chat">Chat</button>
+            <button type="button" data-tab="catchup">Catch Up</button>
+            <button type="button" data-tab="important">Important</button>
+          </nav>
+        </section>
+
+        <aside class="drawer" id="onlineDrawer" aria-label="Online users">
+          <div class="drawer-header">
+            <strong>Online</strong>
+            <button id="closeOnline" type="button" aria-label="Close online users">x</button>
+          </div>
+          <div id="onlineList"></div>
+        </aside>
+      </section>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>
