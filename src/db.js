@@ -125,6 +125,48 @@ function migrate(db) {
     CREATE INDEX IF NOT EXISTS idx_scores_final ON message_scores(final_score);
     CREATE INDEX IF NOT EXISTS idx_reactions_message ON reactions(message_id);
   `);
+
+  migrateMessagesTable(db);
+  migrateReactionsTable(db);
+}
+
+function migrateMessagesTable(db) {
+  const columns = db.prepare("PRAGMA table_info(messages)").all();
+  const hasReplyColumn = columns.some((column) => column.name === "reply_to_message_id");
+  if (hasReplyColumn) return;
+
+  db.exec("ALTER TABLE messages ADD COLUMN reply_to_message_id TEXT");
+}
+
+function migrateReactionsTable(db) {
+  const table = db.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'reactions'").get();
+  if (!table?.sql || !table.sql.includes("message_id TEXT NOT NULL UNIQUE")) return;
+
+  db.exec(`
+    PRAGMA foreign_keys = OFF;
+
+    CREATE TABLE reactions_next (
+      id TEXT PRIMARY KEY,
+      message_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      reaction TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      UNIQUE (message_id, user_id, reaction),
+      FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    INSERT OR IGNORE INTO reactions_next (id, message_id, user_id, reaction, created_at)
+    SELECT id, message_id, user_id, reaction, created_at
+    FROM reactions;
+
+    DROP TABLE reactions;
+    ALTER TABLE reactions_next RENAME TO reactions;
+
+    CREATE INDEX IF NOT EXISTS idx_reactions_message ON reactions(message_id);
+
+    PRAGMA foreign_keys = ON;
+  `);
 }
 
 function seedDefaultGroup(db) {

@@ -104,24 +104,53 @@ function getGroupsForUsername(username) {
         groups.name,
         groups.invite_code,
         groups.created_at,
-        COUNT(messages.id) AS message_count,
-        MAX(messages.created_at) AS last_message_at
+        COUNT(messages.id) AS total_message_count,
+        SUM(
+          CASE
+            WHEN messages.id IS NOT NULL
+              AND (user_last_seen.last_seen_at IS NULL OR messages.created_at > user_last_seen.last_seen_at)
+            THEN 1
+            ELSE 0
+          END
+        ) AS message_count,
+        SUM(
+          CASE
+            WHEN message_scores.final_score >= ?
+              AND (user_last_seen.last_seen_at IS NULL OR messages.created_at > user_last_seen.last_seen_at)
+            THEN 1
+            ELSE 0
+          END
+        ) AS high_signal_count,
+        MAX(messages.created_at) AS last_message_at,
+        (
+          SELECT preview_messages.text
+          FROM messages AS preview_messages
+          JOIN message_scores AS preview_scores ON preview_scores.message_id = preview_messages.id
+          WHERE preview_messages.group_id = groups.id
+          ORDER BY preview_scores.final_score DESC, preview_messages.created_at DESC
+          LIMIT 1
+        ) AS important_preview
       FROM users
       JOIN group_members ON group_members.user_id = users.id
       JOIN groups ON groups.id = group_members.group_id
       LEFT JOIN messages ON messages.group_id = groups.id
+      LEFT JOIN message_scores ON message_scores.message_id = messages.id
+      LEFT JOIN user_last_seen ON user_last_seen.user_id = users.id AND user_last_seen.group_id = groups.id
       WHERE lower(users.username) = lower(?)
       GROUP BY groups.id
-      ORDER BY COALESCE(last_message_at, groups.created_at) DESC
+      ORDER BY high_signal_count DESC, message_count DESC, COALESCE(last_message_at, groups.created_at) DESC
     `)
-    .all(String(username || "").trim())
+    .all(IMPORTANT_THRESHOLD, String(username || "").trim())
     .map((group) => ({
       id: group.id,
       name: group.name,
       inviteCode: group.invite_code,
       createdAt: group.created_at,
       messageCount: Number(group.message_count),
+      totalMessageCount: Number(group.total_message_count),
+      highSignalCount: Number(group.high_signal_count),
       lastMessageAt: group.last_message_at,
+      importantPreview: group.important_preview,
     }));
 }
 
@@ -172,6 +201,14 @@ function persistScore(messageId, score) {
 function hydrateMessage(row) {
   if (!row) return null;
   const reactionCounts = getReactionCounts(row.id);
+  const replyTo = row.reply_to_message_id
+    ? {
+        id: row.reply_to_message_id,
+        username: row.reply_username || "Someone",
+        text: row.reply_text || "Message unavailable",
+        createdAt: row.reply_created_at || null,
+      }
+    : null;
   return {
     id: row.id,
     groupId: row.group_id,
@@ -179,6 +216,7 @@ function hydrateMessage(row) {
     username: row.username,
     text: row.text,
     createdAt: row.created_at,
+    replyTo,
     reactions: reactionCounts,
     baseScore: row.base_score || 0,
     reactionBoost: row.reaction_boost || 0,
@@ -196,6 +234,9 @@ function getMessages(groupId, limit = 120) {
       SELECT
         messages.*,
         users.username,
+        reply_messages.text AS reply_text,
+        reply_messages.created_at AS reply_created_at,
+        reply_users.username AS reply_username,
         message_scores.base_score,
         message_scores.reaction_boost,
         message_scores.final_score,
@@ -204,6 +245,8 @@ function getMessages(groupId, limit = 120) {
         message_scores.matched_rules
       FROM messages
       JOIN users ON users.id = messages.user_id
+      LEFT JOIN messages AS reply_messages ON reply_messages.id = messages.reply_to_message_id
+      LEFT JOIN users AS reply_users ON reply_users.id = reply_messages.user_id
       LEFT JOIN message_scores ON message_scores.message_id = messages.id
       WHERE messages.group_id = ?
       ORDER BY messages.created_at DESC
@@ -220,6 +263,9 @@ function getImportant(groupId, limit = 40) {
       SELECT
         messages.*,
         users.username,
+        reply_messages.text AS reply_text,
+        reply_messages.created_at AS reply_created_at,
+        reply_users.username AS reply_username,
         message_scores.base_score,
         message_scores.reaction_boost,
         message_scores.final_score,
@@ -229,6 +275,8 @@ function getImportant(groupId, limit = 40) {
       FROM message_scores
       JOIN messages ON messages.id = message_scores.message_id
       JOIN users ON users.id = messages.user_id
+      LEFT JOIN messages AS reply_messages ON reply_messages.id = messages.reply_to_message_id
+      LEFT JOIN users AS reply_users ON reply_users.id = reply_messages.user_id
       WHERE messages.group_id = ?
         AND message_scores.final_score >= ?
       ORDER BY message_scores.final_score DESC, messages.created_at DESC
@@ -261,6 +309,9 @@ function createCatchupSession(userId, groupId, fromSeenAt) {
       SELECT
         messages.*,
         users.username,
+        reply_messages.text AS reply_text,
+        reply_messages.created_at AS reply_created_at,
+        reply_users.username AS reply_username,
         message_scores.base_score,
         message_scores.reaction_boost,
         message_scores.final_score,
@@ -270,6 +321,8 @@ function createCatchupSession(userId, groupId, fromSeenAt) {
       FROM message_scores
       JOIN messages ON messages.id = message_scores.message_id
       JOIN users ON users.id = messages.user_id
+      LEFT JOIN messages AS reply_messages ON reply_messages.id = messages.reply_to_message_id
+      LEFT JOIN users AS reply_users ON reply_users.id = reply_messages.user_id
       WHERE messages.group_id = ?
         AND message_scores.final_score >= ?
         AND (? IS NULL OR messages.created_at > ?)
@@ -306,9 +359,17 @@ function getContext(groupId, messageId) {
 
   const before = db
     .prepare(`
-      SELECT messages.*, users.username, message_scores.*
+      SELECT
+        messages.*,
+        users.username,
+        reply_messages.text AS reply_text,
+        reply_messages.created_at AS reply_created_at,
+        reply_users.username AS reply_username,
+        message_scores.*
       FROM messages
       JOIN users ON users.id = messages.user_id
+      LEFT JOIN messages AS reply_messages ON reply_messages.id = messages.reply_to_message_id
+      LEFT JOIN users AS reply_users ON reply_users.id = reply_messages.user_id
       LEFT JOIN message_scores ON message_scores.message_id = messages.id
       WHERE messages.group_id = ? AND messages.created_at < ?
       ORDER BY messages.created_at DESC
@@ -319,9 +380,17 @@ function getContext(groupId, messageId) {
 
   const after = db
     .prepare(`
-      SELECT messages.*, users.username, message_scores.*
+      SELECT
+        messages.*,
+        users.username,
+        reply_messages.text AS reply_text,
+        reply_messages.created_at AS reply_created_at,
+        reply_users.username AS reply_username,
+        message_scores.*
       FROM messages
       JOIN users ON users.id = messages.user_id
+      LEFT JOIN messages AS reply_messages ON reply_messages.id = messages.reply_to_message_id
+      LEFT JOIN users AS reply_users ON reply_users.id = reply_messages.user_id
       LEFT JOIN message_scores ON message_scores.message_id = messages.id
       WHERE messages.group_id = ? AND messages.created_at >= ?
       ORDER BY messages.created_at ASC
@@ -517,23 +586,35 @@ io.on("connection", (socket) => {
     io.to(group.id).emit("users:update", Array.from(getOnline(group.id).values()));
   });
 
-  socket.on("message:send", ({ text }) => {
+  socket.on("message:send", ({ text, replyToMessageId }) => {
     try {
       if (!currentUser || !currentGroup) return;
 
       const cleanText = String(text || "").trim().slice(0, 1000);
       if (!cleanText) return;
+      const cleanReplyToMessageId = String(replyToMessageId || "");
+      const replyMessage = cleanReplyToMessageId
+        ? db
+            .prepare(`
+              SELECT messages.id, messages.text, messages.created_at, users.username
+              FROM messages
+              JOIN users ON users.id = messages.user_id
+              WHERE messages.id = ? AND messages.group_id = ?
+            `)
+            .get(cleanReplyToMessageId, currentGroup.id)
+        : null;
 
       const messageId = randomUUID();
       const createdAt = nowIso();
       const score = scoreMessage(cleanText);
 
-      db.prepare("INSERT INTO messages (id, group_id, user_id, text, created_at) VALUES (?, ?, ?, ?, ?)").run(
+      db.prepare("INSERT INTO messages (id, group_id, user_id, text, created_at, reply_to_message_id) VALUES (?, ?, ?, ?, ?, ?)").run(
         messageId,
         currentGroup.id,
         currentUser.id,
         cleanText,
-        createdAt
+        createdAt,
+        replyMessage ? replyMessage.id : null
       );
       persistScore(messageId, score);
       setLastSeen(currentUser.id, currentGroup.id, createdAt);
@@ -545,6 +626,10 @@ io.on("connection", (socket) => {
         username: currentUser.username,
         text: cleanText,
         created_at: createdAt,
+        reply_to_message_id: replyMessage?.id || null,
+        reply_text: replyMessage?.text || null,
+        reply_created_at: replyMessage?.created_at || null,
+        reply_username: replyMessage?.username || null,
         base_score: score.baseScore,
         reaction_boost: score.reactionBoost,
         final_score: score.finalScore,

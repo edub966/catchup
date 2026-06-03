@@ -13,66 +13,78 @@
     <main class="shell">
       <section class="app">
         <header class="topbar">
+          <button class="icon-button hidden" id="backHome" type="button" aria-label="Back to home">&lt;</button>
           <div class="brand">
             <div class="brand-mark">C</div>
             <div>
-              <p>CatchUp</p>
-              <h1 id="groupName">Find what mattered in the noise.</h1>
+              <p id="topEyebrow">CatchUp</p>
+              <h1 id="groupName">Group chat that survives itself.</h1>
             </div>
           </div>
-          <button class="online-button" id="onlineButton" type="button" aria-label="Show online users">
-            <span id="onlineCount">0</span>
-          </button>
+          <div class="top-actions">
+            <button class="ghost-button hidden" id="logoutButton" type="button">Log out</button>
+            <button class="menu-button hidden" id="chatMenuButton" type="button" aria-label="Open chat menu">...</button>
+          </div>
         </header>
 
-        <section class="entry" id="entryPanel">
-          <div class="entry-copy">
-            <p class="eyebrow">Group chat that survives itself</p>
+        <section class="auth-landing" id="authLanding">
+          <div class="auth-copy">
+            <p class="eyebrow">Catch the signal</p>
             <h2>Keep the chaos. Catch the important stuff.</h2>
+            <p>CatchUp turns missed group-chat noise into the few things worth opening right now.</p>
           </div>
 
-          <form class="entry-form" id="entryForm">
+          <div class="auth-points" aria-hidden="true">
+            <div>
+              <strong>Miss less</strong>
+              <span>Catch the few messages that changed the plan.</span>
+            </div>
+            <div>
+              <strong>Stay casual</strong>
+              <span>No inbox, no project board, just group-chat survival.</span>
+            </div>
+          </div>
+
+          <form class="auth-panel" id="authForm">
+            <div class="auth-tabs" role="tablist" aria-label="Auth mode">
+              <button class="active" type="button" data-auth-mode="signin">Sign in</button>
+              <button type="button" data-auth-mode="register">Create</button>
+              <button type="button" data-auth-mode="demo">Demo</button>
+            </div>
             <label>
-              <span>Your name</span>
+              <span id="authNameLabel">Your name</span>
               <input id="usernameInput" autocomplete="nickname" maxlength="28" placeholder="Erik" required />
             </label>
-
-            <section class="home-groups" id="homeGroups">
-              <div class="home-groups-header">
-                <strong>Your chats</strong>
-                <button id="refreshGroups" type="button">Refresh</button>
-              </div>
-              <p class="home-groups-hint" id="homeGroupsHint">Enter your name to load saved chats.</p>
-              <div id="homeGroupsList"></div>
-            </section>
-
-            <label>
-              <span>Invite code</span>
-              <input id="inviteInput" maxlength="12" placeholder="KETCHUP" value="KETCHUP" />
-            </label>
-
-            <label>
-              <span>New group name</span>
-              <input id="groupInput" maxlength="48" placeholder="Create instead of joining" />
-            </label>
-
-            <div class="entry-actions">
-              <button type="submit" data-mode="join">Join group</button>
-              <button class="secondary" type="submit" data-mode="create">Create group</button>
-            </div>
+            <p id="authHint">Frontend demo session for now. Backend auth can replace this later.</p>
+            <button class="primary-button" type="submit" id="authSubmit">Continue</button>
           </form>
         </section>
 
+        <section class="home-dashboard hidden" id="homeDashboard">
+          <div class="dashboard-head">
+            <div>
+              <p class="eyebrow" id="homeEyebrow">Welcome back</p>
+              <h2>Your groups</h2>
+            </div>
+            <button class="new-group-button" id="openNewGroup" type="button">+ New</button>
+          </div>
+
+          <div class="home-groups-hint" id="homeGroupsHint">Loading groups...</div>
+          <div class="group-list" id="homeGroupsList"></div>
+        </section>
+
         <section class="workspace hidden" id="workspace">
-          <section class="invite-strip">
-            <span id="inviteCode">Invite: KETCHUP</span>
-            <span id="scoreHint">Scores are quiet until they matter.</span>
+          <section class="chat-strip">
+            <div>
+              <span id="chatNowLabel">In chat now</span>
+              <div class="chat-heads" id="chatHeads"></div>
+            </div>
           </section>
 
           <section class="catchup-banner hidden" id="catchupBanner">
             <div>
               <p class="eyebrow">Catch Up</p>
-              <h2 id="catchupTitle">Here’s what mattered.</h2>
+              <h2 id="catchupTitle">Here is what mattered.</h2>
             </div>
             <button id="openCatchup" type="button">View</button>
           </section>
@@ -87,8 +99,8 @@
             <section class="view" id="catchupView" aria-label="Catch Up">
               <div class="view-header">
                 <div>
-                  <p class="eyebrow">Catch Up</p>
-                  <h2 id="catchupHeading">You’re all caught up.</h2>
+                  <p class="eyebrow">What did I miss?</p>
+                  <h2 id="catchupHeading">You are all caught up.</h2>
                 </div>
               </div>
               <div class="feed" id="catchupList"></div>
@@ -105,8 +117,8 @@
             <section class="view" id="importantView" aria-label="Important">
               <div class="view-header">
                 <div>
-                  <p class="eyebrow">Important</p>
-                  <h2>High-signal messages from the group.</h2>
+                  <p class="eyebrow">What mattered?</p>
+                  <h2>High-signal messages from this group.</h2>
                 </div>
               </div>
               <div class="feed" id="importantList"></div>
@@ -114,21 +126,70 @@
           </section>
 
           <form class="composer" id="messageForm">
-            <input id="messageInput" autocomplete="off" maxlength="1000" placeholder="Say anything..." />
-            <button type="submit">Send</button>
+            <div class="reply-composer hidden" id="replyComposer">
+              <div>
+                <strong id="replyComposerName">Replying</strong>
+                <span id="replyComposerText"></span>
+              </div>
+              <button id="cancelReply" type="button" aria-label="Cancel reply">x</button>
+            </div>
+            <div class="composer-row">
+              <input id="messageInput" autocomplete="off" maxlength="1000" placeholder="Message the group..." />
+              <button type="submit">Send</button>
+            </div>
           </form>
 
-          <nav class="bottom-nav" aria-label="Primary">
+          <nav class="bottom-nav" aria-label="Group tabs">
             <button class="active" type="button" data-tab="chat">Chat</button>
             <button type="button" data-tab="catchup">Catch Up</button>
             <button type="button" data-tab="important">Important</button>
           </nav>
         </section>
 
-        <aside class="drawer" id="onlineDrawer" aria-label="Online users">
+        <section class="sheet hidden" id="newGroupSheet" aria-label="New group">
+          <button class="sheet-scrim" id="closeNewGroupScrim" type="button" aria-label="Close"></button>
+          <form class="sheet-panel" id="newGroupForm">
+            <div class="sheet-header">
+              <strong>New group</strong>
+              <button class="icon-button" id="closeNewGroup" type="button" aria-label="Close">x</button>
+            </div>
+            <div class="auth-tabs compact" role="tablist" aria-label="New group mode">
+              <button class="active" type="button" data-group-mode="join">Join</button>
+              <button type="button" data-group-mode="create">Create</button>
+            </div>
+            <label id="inviteField">
+              <span>Invite code</span>
+              <input id="inviteInput" maxlength="12" placeholder="KETCHUP" />
+            </label>
+            <label id="groupField" class="hidden">
+              <span>Group name</span>
+              <input id="groupInput" maxlength="48" placeholder="Friday chaos" />
+            </label>
+            <p class="sheet-status" id="newGroupStatus" aria-live="polite"></p>
+            <button class="primary-button" type="submit" id="newGroupSubmit">Join group</button>
+          </form>
+        </section>
+
+        <section class="menu-popover hidden" id="chatMenu" aria-label="Chat menu">
+          <button class="menu-scrim" id="closeChatMenuScrim" type="button" aria-label="Close chat menu"></button>
+          <div class="menu-panel">
+            <div class="menu-header">
+              <strong>Chat menu</strong>
+              <button class="icon-button" id="closeChatMenu" type="button" aria-label="Close">x</button>
+            </div>
+            <div class="menu-invite">
+              <span id="inviteCode">Invite code</span>
+              <strong id="inviteCodeValue">KETCHUP</strong>
+            </div>
+            <button id="copyInvite" type="button">Copy invite code</button>
+            <button id="shareInvite" type="button">Share invite</button>
+          </div>
+        </section>
+
+        <aside class="drawer" id="onlineDrawer" aria-label="Users in chat">
           <div class="drawer-header">
-            <strong>Online</strong>
-            <button id="closeOnline" type="button" aria-label="Close online users">x</button>
+            <strong>In chat now</strong>
+            <button id="closeOnline" type="button" aria-label="Close users in chat">x</button>
           </div>
           <div id="onlineList"></div>
         </aside>
