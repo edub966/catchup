@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="460" viewBox="0 0 960 460">
+<rect width="100%" height="100%" fill="#fffdf9"/>
+<text x="58" y="30" font-family="Arial" font-size="20" font-weight="700" fill="#171717">Average Score by Expected Category</text>
+<line x1="58" y1="364" x2="928" y2="364" stroke="#d7d0c6"/>
+<rect x="63" y="339.3271255063075" width="98.75" height="24.672874493692515" rx="3" fill="#16a34a"/>
+<text x="112.375" y="333.3271255063075" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">6.2</text>
+<text transform="translate(112.375,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">noise</text>
+<rect x="171.75" y="118.25656959537665" width="98.75" height="245.74343040462335" rx="3" fill="#16a34a"/>
+<text x="221.125" y="112.25656959537665" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">61.4</text>
+<text transform="translate(221.125,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">announcement</text>
+<rect x="280.5" y="115.06925488916681" width="98.75" height="248.9307451108332" rx="3" fill="#16a34a"/>
+<text x="329.875" y="109.06925488916681" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">62.2</text>
+<text transform="translate(329.875,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">request</text>
+<rect x="389.25" y="268.1922221681658" width="98.75" height="95.80777783183422" rx="3" fill="#16a34a"/>
+<text x="438.625" y="262.1922221681658" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">23.9</text>
+<text transform="translate(438.625,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">question</text>
+<rect x="498" y="158.0923904276315" width="98.75" height="205.9076095723685" rx="3" fill="#16a34a"/>
+<text x="547.375" y="152.0923904276315" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">51.4</text>
+<text transform="translate(547.375,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">logistics</text>
+<rect x="606.75" y="190.4153022886327" width="98.75" height="173.5846977113673" rx="3" fill="#16a34a"/>
+<text x="656.125" y="184.4153022886327" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">43.4</text>
+<text transform="translate(656.125,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">plan</text>
+<rect x="715.5" y="157.61286731415183" width="98.75" height="206.38713268584817" rx="3" fill="#16a34a"/>
+<text x="764.875" y="151.61286731415183" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">51.5</text>
+<text transform="translate(764.875,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">event</text>
+<rect x="824.25" y="52" width="98.75" height="312" rx="3" fill="#16a34a"/>
+<text x="873.625" y="46" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">77.9</text>
+<text transform="translate(873.625,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">deadline</text>
+</svg>

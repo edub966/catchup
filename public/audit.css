@@ -124,6 +124,17 @@ button {
   font-weight: 850;
 }
 
+.rules span {
+  border-radius: 10px;
+  line-height: 1.25;
+}
+
+.rules strong,
+.rules em {
+  color: #171717;
+  font-style: normal;
+}
+
 .score-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

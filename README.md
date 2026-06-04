@@ -192,6 +192,28 @@ Current categories:
 
 Reaction boosts are capped so viral noise does not automatically become important.
 
+## Simulation Evaluation
+
+Run the deterministic scoring stress test with:
+
+```powershell
+& "C:\Program Files\nodejs\npm.cmd" run simulate
+```
+
+or:
+
+```bash
+npm run simulate
+```
+
+The simulation creates an isolated database at `work/simulation/catchup-sim.sqlite`, generates thousands of realistic messages across social group types, simulates reactions and replies, scores everything, and writes reports to:
+
+```text
+work/simulation/reports/algorithm-evaluation.md
+```
+
+Raw exports live in `work/simulation/output/`, including scored messages, threshold analysis, false positives, false negatives, edge-case results, rule impact, and category confusion.
+
 ## Sprint 3 Focus
 
 Sprint 3 should focus on really building the scoring and categorization algorithm.

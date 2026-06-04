@@ -7,6 +7,9 @@ catchup.sqlite-wal
 
 work/*.log
 work/*.tmp
+work/simulation/*.sqlite
+work/simulation/*.sqlite-shm
+work/simulation/*.sqlite-wal
 
 .DS_Store
 Thumbs.db

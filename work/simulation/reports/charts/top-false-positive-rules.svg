@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="460" viewBox="0 0 960 460">
+<rect width="100%" height="100%" fill="#fffdf9"/>
+<text x="58" y="30" font-family="Arial" font-size="20" font-weight="700" fill="#171717">Rules Appearing Most in False Positives</text>
+<line x1="58" y1="364" x2="928" y2="364" stroke="#d7d0c6"/>
+<rect x="63" y="52" width="77" height="312" rx="3" fill="#f97316"/>
+<text x="101.5" y="46" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">65.0</text>
+<text transform="translate(101.5,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">question.intent</text>
+<rect x="150" y="61.60000000000002" width="77" height="302.4" rx="3" fill="#f97316"/>
+<text x="188.5" y="55.60000000000002" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">63.0</text>
+<text transform="translate(188.5,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">logistics.supplies</text>
+<rect x="237" y="61.60000000000002" width="77" height="302.4" rx="3" fill="#f97316"/>
+<text x="275.5" y="55.60000000000002" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">63.0</text>
+<text transform="translate(275.5,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">request.can-someone</text>
+<rect x="324" y="61.60000000000002" width="77" height="302.4" rx="3" fill="#f97316"/>
+<text x="362.5" y="55.60000000000002" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">63.0</text>
+<text transform="translate(362.5,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">request.bring-supplies</text>
+<rect x="411" y="344.8" width="77" height="19.200000000000003" rx="3" fill="#f97316"/>
+<text x="449.5" y="338.8" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">4.0</text>
+<text transform="translate(449.5,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">time.relative</text>
+<rect x="498" y="344.8" width="77" height="19.200000000000003" rx="3" fill="#f97316"/>
+<text x="536.5" y="338.8" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">4.0</text>
+<text transform="translate(536.5,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">logistics.transport</text>
+<rect x="585" y="344.8" width="77" height="19.200000000000003" rx="3" fill="#f97316"/>
+<text x="623.5" y="338.8" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">4.0</text>
+<text transform="translate(623.5,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">commitment.availability</text>
+<rect x="672" y="354.4" width="77" height="9.600000000000001" rx="3" fill="#f97316"/>
+<text x="710.5" y="348.4" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">2.0</text>
+<text transform="translate(710.5,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">event.social-anchor</text>
+<rect x="759" y="354.4" width="77" height="9.600000000000001" rx="3" fill="#f97316"/>
+<text x="797.5" y="348.4" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">2.0</text>
+<text transform="translate(797.5,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">question.event-context</text>
+<rect x="846" y="354.4" width="77" height="9.600000000000001" rx="3" fill="#f97316"/>
+<text x="884.5" y="348.4" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">2.0</text>
+<text transform="translate(884.5,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">plan.leaving-meeting</text>
+</svg>

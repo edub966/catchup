@@ -41,7 +41,16 @@ function renderRows() {
         </div>
         <p class="message-text">${escapeHtml(row.text)}</p>
         <div class="rules">
-          ${row.matched_rules.map((rule) => `<span>${escapeHtml(rule.id)} ${rule.points > 0 ? "+" : ""}${rule.points}</span>`).join("")}
+          ${row.matched_rules.map((rule) => {
+            const delta = rule.delta ?? rule.points ?? 0;
+            return `
+              <span title="${escapeHtml(rule.label || rule.id)}">
+                <strong>${escapeHtml(rule.id)}</strong>
+                ${escapeHtml(rule.label || "")}
+                <em>${delta > 0 ? "+" : ""}${delta}</em>
+              </span>
+            `;
+          }).join("")}
         </div>
       </section>
       <section>
@@ -49,6 +58,8 @@ function renderRows() {
           <div><strong>${row.base_score ?? 0}</strong><span>base</span></div>
           <div><strong>${row.reaction_boost ?? 0}</strong><span>boost</span></div>
           <div><strong>${row.final_score ?? 0}</strong><span>final</span></div>
+          <div><strong>${row.signal_confidence ?? 0}</strong><span>confidence</span></div>
+          <div><strong>${categoryLabel(row.signal_category)}</strong><span>category</span></div>
         </div>
         <div class="controls">
           <select data-field="manualRating">

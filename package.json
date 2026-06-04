@@ -5,7 +5,10 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "test": "node --test \"test/**/*.test.js\"",
+    "simulate": "node scripts/simulation/runSimulation.js",
+    "report": "node scripts/simulation/runSimulation.js"
   },
   "dependencies": {
     "express": "^4.19.2",
