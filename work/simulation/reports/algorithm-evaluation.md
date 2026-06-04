@@ -10,6 +10,8 @@ The strongest threshold by F1 in this run was **55** with precision 76.8% and re
 
 The algorithm is useful enough for early testing if the product goal is high precision, but it still misses casual important messages and typo/slang variants. The biggest risk is not viral jokes from reactions; reaction caps worked well in this run. The bigger risk is sparse, context-dependent messages that real users understand but rules cannot.
 
+In plain English: CatchUp is currently acting like a careful editor, not a maximal safety net. It is fairly good at keeping obvious junk out of Important, but it still needs tuning before users should trust it to catch every actionable detail in a messy chat.
+
 ## Simulation Methodology
 
 - Seed: 20260604
@@ -23,6 +25,8 @@ The algorithm is useful enough for early testing if the product goal is high pre
 - Isolated database: `work\simulation\catchup-sim.sqlite`
 
 Messages were generated from group-specific conversation templates plus an explicit adversarial edge-case suite. Every message carries ground truth importance, expected category, scenario tag, and notes. The simulation scores each message twice: once without reactions and once with simulated reactions, so the report can isolate reaction impact.
+
+Ground truth labels mean: `important` should belong in the Important feed, `maybe` is useful context but not necessarily Important, and `noise` should stay out. This matters because a false positive can be either true junk or a maybe-useful message that the product chose to surface too aggressively.
 
 ## Charts
 
@@ -44,6 +48,13 @@ Messages were generated from group-specific conversation templates plus an expli
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 65 | 523 | 86.8% | 53.9% | 69 | 389 | 3.6% | 46.1% |
 
+How to read this finding:
+
+- Precision answers: when CatchUp shows a message in Important, how often is it truly important? Here, 86.8% means the feed is fairly trustworthy, but roughly 69 shown messages were still not ground-truth important.
+- Recall answers: of all truly important messages, how many did CatchUp catch? Here, 53.9% means the algorithm missed 389 important messages, so the current system is more conservative than comprehensive.
+- False positive rate is low at 3.6%, which is good for avoiding a junk-filled Important tab. False negative rate is high at 46.1%, which is the main product risk if users rely on CatchUp as their only way to catch up.
+- Category accuracy at 87.4% means the scorer usually names the right kind of signal once it sees one, but category accuracy is less important than precision/recall for the core product promise.
+
 ## Threshold Sensitivity
 
 | Threshold | Shown | Precision | Recall | False Positives | False Negatives |
@@ -55,6 +66,12 @@ Messages were generated from group-specific conversation templates plus an expli
 | 75 | 406 | 92.6% | 44.6% | 30 | 467 |
 | 80 | 358 | 91.6% | 38.9% | 30 | 515 |
 
+What this means:
+
+- Lower thresholds show more messages and recover more important content, but they also increase noise. Threshold 55 had the best F1 balance here because it caught 64.8% of important messages while keeping precision at 76.8%.
+- The current threshold 65 is more precision-oriented: it shows 523 messages, with 69 false positives and 389 false negatives. That is a deliberate "better to miss than flood" posture.
+- Product decision: keep 65 if the Important tab must feel highly curated during early demos. Test 55 or 60 if users complain that CatchUp misses too many useful messages.
+
 ## Score By Ground Truth Label
 
 | Label | Count | Avg Base | Avg Boost | Avg Final |
@@ -63,6 +80,13 @@ Messages were generated from group-specific conversation templates plus an expli
 | important | 843 | 55.0 | 10.8 | 64.5 |
 | noise | 1069 | 4.6 | 1.0 | 5.6 |
 
+Interpretation:
+
+- Important messages average 64.5, which sits just below the current threshold. That explains the recall problem: many important messages are close, but not quite high enough.
+- Maybe messages average 38.9, which is comfortably below Important. This is healthy because maybe-useful chatter should not dominate the feed.
+- Noise averages 5.6, so the noise penalties and reaction caps are doing their basic job.
+- The practical tuning target is not separating noise from important; that already works. The hard part is lifting terse but genuinely important logistics without also lifting vague maybe messages.
+
 ## Group-by-Group Breakdown
 
 ### House Dinner Crew
@@ -70,6 +94,8 @@ Messages were generated from group-specific conversation templates plus an expli
 Type: Food/social planning chat. Messages: 180. Active simulated users: 16. Mix: 55 important, 55 maybe, 70 noise.
 
 Precision 57.1%, recall 7.3%, category accuracy 82.8%, average score 27.8. False positives: 3. False negatives: 51.
+
+Finding: Lower precision means this group has language that makes maybe/noise messages look actionable. Low recall means this group uses wording the current rules do not understand well enough. False negatives are the first place to inspect if this group feels under-served; false positives are the first place to inspect if its Important tab feels noisy.
 
 Representative messages:
 
@@ -86,6 +112,8 @@ Type: DJ/promoter group. Messages: 184. Active simulated users: 16. Mix: 56 impo
 
 Precision 72.7%, recall 14.3%, category accuracy 80.4%, average score 25.5. False positives: 3. False negatives: 48.
 
+Finding: Lower precision means this group has language that makes maybe/noise messages look actionable. Low recall means this group uses wording the current rules do not understand well enough. False negatives are the first place to inspect if this group feels under-served; false positives are the first place to inspect if its Important tab feels noisy.
+
 Representative messages:
 
 | Text | Group | Expected | Score | Reactions | Rules |
@@ -100,6 +128,8 @@ Representative messages:
 Type: Sorority event planning chat. Messages: 185. Active simulated users: 16. Mix: 57 important, 55 maybe, 73 noise.
 
 Precision 80.7%, recall 80.7%, category accuracy 88.1%, average score 39.4. False positives: 11. False negatives: 11.
+
+Finding: Good precision means most surfaced messages are worth reading, though some maybe/noise items still leak in. Strong recall means the scorer catches most important items in this context. False negatives are the first place to inspect if this group feels under-served; false positives are the first place to inspect if its Important tab feels noisy.
 
 Representative messages:
 
@@ -116,6 +146,8 @@ Type: Recruitment logistics chat. Messages: 180. Active simulated users: 17. Mix
 
 Precision 82.1%, recall 41.8%, category accuracy 85.0%, average score 31.7. False positives: 5. False negatives: 32.
 
+Finding: Good precision means most surfaced messages are worth reading, though some maybe/noise items still leak in. Low recall means this group uses wording the current rules do not understand well enough. False negatives are the first place to inspect if this group feels under-served; false positives are the first place to inspect if its Important tab feels noisy.
+
 Representative messages:
 
 | Text | Group | Expected | Score | Reactions | Rules |
@@ -130,6 +162,8 @@ Representative messages:
 Type: Student organization/club. Messages: 185. Active simulated users: 18. Mix: 59 important, 56 maybe, 70 noise.
 
 Precision 83.8%, recall 52.5%, category accuracy 94.6%, average score 37.2. False positives: 6. False negatives: 28.
+
+Finding: Good precision means most surfaced messages are worth reading, though some maybe/noise items still leak in. Middle recall means CatchUp catches obvious signal but misses a meaningful number of terse or context-heavy messages. False negatives are the first place to inspect if this group feels under-served; false positives are the first place to inspect if its Important tab feels noisy.
 
 Representative messages:
 
@@ -146,6 +180,8 @@ Type: College friend group. Messages: 185. Active simulated users: 17. Mix: 58 i
 
 Precision 84.4%, recall 46.6%, category accuracy 82.7%, average score 31.2. False positives: 5. False negatives: 31.
 
+Finding: Good precision means most surfaced messages are worth reading, though some maybe/noise items still leak in. Middle recall means CatchUp catches obvious signal but misses a meaningful number of terse or context-heavy messages. False negatives are the first place to inspect if this group feels under-served; false positives are the first place to inspect if its Important tab feels noisy.
+
 Representative messages:
 
 | Text | Group | Expected | Score | Reactions | Rules |
@@ -160,6 +196,8 @@ Representative messages:
 Type: Sports team. Messages: 185. Active simulated users: 15. Mix: 58 important, 57 maybe, 70 noise.
 
 Precision 84.4%, recall 65.5%, category accuracy 78.4%, average score 35.4. False positives: 7. False negatives: 20.
+
+Finding: Good precision means most surfaced messages are worth reading, though some maybe/noise items still leak in. Middle recall means CatchUp catches obvious signal but misses a meaningful number of terse or context-heavy messages. False negatives are the first place to inspect if this group feels under-served; false positives are the first place to inspect if its Important tab feels noisy.
 
 Representative messages:
 
@@ -176,6 +214,8 @@ Type: Apartment/roommate chat. Messages: 184. Active simulated users: 15. Mix: 5
 
 Precision 86.4%, recall 33.9%, category accuracy 91.3%, average score 28.7. False positives: 3. False negatives: 37.
 
+Finding: Good precision means most surfaced messages are worth reading, though some maybe/noise items still leak in. Low recall means this group uses wording the current rules do not understand well enough. False negatives are the first place to inspect if this group feels under-served; false positives are the first place to inspect if its Important tab feels noisy.
+
 Representative messages:
 
 | Text | Group | Expected | Score | Reactions | Rules |
@@ -190,6 +230,8 @@ Representative messages:
 Type: Festival/social trip chat. Messages: 180. Active simulated users: 17. Mix: 55 important, 55 maybe, 70 noise.
 
 Precision 87.2%, recall 61.8%, category accuracy 86.1%, average score 35.9. False positives: 5. False negatives: 21.
+
+Finding: Good precision means most surfaced messages are worth reading, though some maybe/noise items still leak in. Middle recall means CatchUp catches obvious signal but misses a meaningful number of terse or context-heavy messages. False negatives are the first place to inspect if this group feels under-served; false positives are the first place to inspect if its Important tab feels noisy.
 
 Representative messages:
 
@@ -206,6 +248,8 @@ Type: Large chaotic general social chat. Messages: 184. Active simulated users: 
 
 Precision 88.7%, recall 82.5%, category accuracy 93.5%, average score 39.8. False positives: 6. False negatives: 10.
 
+Finding: Good precision means most surfaced messages are worth reading, though some maybe/noise items still leak in. Strong recall means the scorer catches most important items in this context. False negatives are the first place to inspect if this group feels under-served; false positives are the first place to inspect if its Important tab feels noisy.
+
 Representative messages:
 
 | Text | Group | Expected | Score | Reactions | Rules |
@@ -220,6 +264,8 @@ Representative messages:
 Type: Tailgate/party planning chat. Messages: 184. Active simulated users: 18. Mix: 56 important, 55 maybe, 73 noise.
 
 Precision 90.4%, recall 83.9%, category accuracy 93.5%, average score 37.0. False positives: 5. False negatives: 9.
+
+Finding: Very high precision means this group's Important feed is trusted, but it may still miss quieter important messages. Strong recall means the scorer catches most important items in this context. False negatives are the first place to inspect if this group feels under-served; false positives are the first place to inspect if its Important tab feels noisy.
 
 Representative messages:
 
@@ -236,6 +282,8 @@ Type: Group project/class chat. Messages: 184. Active simulated users: 17. Mix: 
 
 Precision 90.5%, recall 34.5%, category accuracy 85.3%, average score 31.4. False positives: 2. False negatives: 36.
 
+Finding: Very high precision means this group's Important feed is trusted, but it may still miss quieter important messages. Low recall means this group uses wording the current rules do not understand well enough. False negatives are the first place to inspect if this group feels under-served; false positives are the first place to inspect if its Important tab feels noisy.
+
 Representative messages:
 
 | Text | Group | Expected | Score | Reactions | Rules |
@@ -250,6 +298,8 @@ Representative messages:
 Type: Event transportation chat. Messages: 180. Active simulated users: 18. Mix: 55 important, 55 maybe, 70 noise.
 
 Precision 90.6%, recall 52.7%, category accuracy 86.7%, average score 32.1. False positives: 3. False negatives: 26.
+
+Finding: Very high precision means this group's Important feed is trusted, but it may still miss quieter important messages. Middle recall means CatchUp catches obvious signal but misses a meaningful number of terse or context-heavy messages. False negatives are the first place to inspect if this group feels under-served; false positives are the first place to inspect if its Important tab feels noisy.
 
 Representative messages:
 
@@ -266,6 +316,8 @@ Type: Fraternity pledge chat. Messages: 185. Active simulated users: 15. Mix: 56
 
 Precision 93.2%, recall 98.2%, category accuracy 95.1%, average score 41.7. False positives: 4. False negatives: 1.
 
+Finding: Very high precision means this group's Important feed is trusted, but it may still miss quieter important messages. Strong recall means the scorer catches most important items in this context. False negatives are the first place to inspect if this group feels under-served; false positives are the first place to inspect if its Important tab feels noisy.
+
 Representative messages:
 
 | Text | Group | Expected | Score | Reactions | Rules |
@@ -281,6 +333,8 @@ Type: Sports pickup team. Messages: 180. Active simulated users: 15. Mix: 55 imp
 
 Precision 96.4%, recall 49.1%, category accuracy 87.2%, average score 32.5. False positives: 1. False negatives: 28.
 
+Finding: Very high precision means this group's Important feed is trusted, but it may still miss quieter important messages. Middle recall means CatchUp catches obvious signal but misses a meaningful number of terse or context-heavy messages. False negatives are the first place to inspect if this group feels under-served; false positives are the first place to inspect if its Important tab feels noisy.
+
 Representative messages:
 
 | Text | Group | Expected | Score | Reactions | Rules |
@@ -292,6 +346,8 @@ Representative messages:
 
 ## Hardest Groups
 
+These are the groups where the scorer looked weakest in this run. Hard groups usually reveal one of three problems: the group uses domain-specific shorthand, the important messages are too terse for single-message scoring, or maybe/noise messages contain words that look actionable.
+
 | Group | Type | Precision | Recall | FP | FN | Category Acc |
 | --- | --- | --- | --- | --- | --- | --- |
 | House Dinner Crew | Food/social planning chat | 57.1% | 7.3% | 3 | 51 | 82.8% |
@@ -301,6 +357,14 @@ Representative messages:
 | Campus Volunteer Board | Student organization/club | 83.8% | 52.5% | 6 | 28 | 94.6% |
 
 ## Message Examples
+
+How to use these examples:
+
+- True positives show the patterns the algorithm understands well. These are rule combinations worth preserving during tuning.
+- False positives show messages that would annoy users because they appear in Important despite not being ground-truth important.
+- False negatives are the most valuable tuning examples because they are real misses. They show what users might still have to find manually.
+- Ambiguous calls are not necessarily bugs. They show the gray zone where product judgment matters: should CatchUp be quiet, or should it surface more maybe-useful coordination?
+- Reaction-sensitive rows show whether reactions are acting as validation or accidentally overpowering the text score.
 
 ### Highest-Scoring True Positives
 
@@ -391,6 +455,12 @@ Representative messages:
 
 Reactions moved 101 messages across the Important threshold. Funny reactions promoted 0 noise messages across the threshold.
 
+Interpretation:
+
+- 101 messages crossed into Important because of reactions. These are cases where social validation changed product behavior.
+- 0 noise messages crossed because of funny/hype reactions. That is a strong sign the reaction cap is doing its job.
+- Important messages received an average boost of 10.8, compared with 4.4 for maybe messages and 1.0 for noise. This is the intended shape: reactions should help real signal more than jokes.
+
 | Ground Truth | Average Reaction Boost |
 | --- | --- |
 | important | 10.8 |
@@ -400,6 +470,13 @@ Reactions moved 101 messages across the Important threshold. Funny reactions pro
 ## Edge-Case Analysis
 
 Edge-case precision is 100.0%, recall is 27.8%, and category accuracy is 62.2%.
+
+What this section is proving:
+
+- Edge cases are adversarial by design. A lower score here is not automatically bad; the point is to expose where simple rules lack social context.
+- Edge-case recall at 27.8% shows how often the engine catches non-obvious important messages such as slang, casual commands, cancellations, or group-specific shorthand.
+- Edge-case precision at 100.0% shows whether tricky joke messages with important-looking words are leaking into Important.
+- The highest-value misses are casual important messages and context-required messages. These are hard for a single-message rule engine because users often omit the object once everyone in the chat already knows it.
 
 | Scenario | Count | Avg Score | Precision | Recall | Category Acc |
 | --- | --- | --- | --- | --- | --- |
@@ -452,6 +529,12 @@ Representative edge cases:
 | bring that again | Club Soccer | maybe/logistics | 8 (noise) | {"❓":1} | noise.vague-short (-12) |
 
 ## Scoring Insights
+
+How to read rule impact:
+
+- False-positive rules (question.intent, logistics.supplies, request.can-someone) are not automatically bad rules. They may also appear in true positives. The question is whether they need more context gates or phrase exceptions.
+- False-negative rules (question.intent, logistics.supplies, request.can-someone) show rules that fired on missed important messages but did not add enough score to cross the threshold. These are candidates for combo rules, not necessarily larger standalone deltas.
+- A rule that appears in both true positives and false positives should be tuned carefully. Broadly weakening it may fix noise while damaging recall.
 
 Rules that most often appeared in false positives:
 

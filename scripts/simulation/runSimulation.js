@@ -917,6 +917,101 @@ function ruleSummary(row) {
   return row.matchedRules.slice(0, 5).map((rule) => `${rule.id} (${rule.delta > 0 ? "+" : ""}${rule.delta})`).join(", ");
 }
 
+function explainOverall(evaluation) {
+  const lines = [
+    "How to read this finding:",
+    "",
+    `- Precision answers: when CatchUp shows a message in Important, how often is it truly important? Here, ${pct(evaluation.overall.precision)} means the feed is fairly trustworthy, but roughly ${evaluation.overall.falsePositives} shown messages were still not ground-truth important.`,
+    `- Recall answers: of all truly important messages, how many did CatchUp catch? Here, ${pct(evaluation.overall.recall)} means the algorithm missed ${evaluation.overall.falseNegatives} important messages, so the current system is more conservative than comprehensive.`,
+    `- False positive rate is low at ${pct(evaluation.overall.falsePositiveRate)}, which is good for avoiding a junk-filled Important tab. False negative rate is high at ${pct(evaluation.overall.falseNegativeRate)}, which is the main product risk if users rely on CatchUp as their only way to catch up.`,
+    `- Category accuracy at ${pct(evaluation.categoryAccuracy)} means the scorer usually names the right kind of signal once it sees one, but category accuracy is less important than precision/recall for the core product promise.`,
+  ];
+  return lines.join("\n");
+}
+
+function explainThresholds(evaluation, bestThreshold) {
+  const current = evaluation.thresholdAnalysis.find((row) => row.threshold === IMPORTANT_THRESHOLD);
+  return [
+    "What this means:",
+    "",
+    `- Lower thresholds show more messages and recover more important content, but they also increase noise. Threshold ${bestThreshold.threshold} had the best F1 balance here because it caught ${pct(bestThreshold.recall)} of important messages while keeping precision at ${pct(bestThreshold.precision)}.`,
+    `- The current threshold ${IMPORTANT_THRESHOLD} is more precision-oriented: it shows ${current.messagesShown} messages, with ${current.falsePositives} false positives and ${current.falseNegatives} false negatives. That is a deliberate \"better to miss than flood\" posture.`,
+    "- Product decision: keep 65 if the Important tab must feel highly curated during early demos. Test 55 or 60 if users complain that CatchUp misses too many useful messages.",
+  ].join("\n");
+}
+
+function explainScoreBands(evaluation) {
+  const byLabel = Object.fromEntries(evaluation.scoreByLabel.map((row) => [row.label, row]));
+  return [
+    "Interpretation:",
+    "",
+    `- Important messages average ${score(byLabel.important?.averageFinalScore || 0)}, which sits just below the current threshold. That explains the recall problem: many important messages are close, but not quite high enough.`,
+    `- Maybe messages average ${score(byLabel.maybe?.averageFinalScore || 0)}, which is comfortably below Important. This is healthy because maybe-useful chatter should not dominate the feed.`,
+    `- Noise averages ${score(byLabel.noise?.averageFinalScore || 0)}, so the noise penalties and reaction caps are doing their basic job.`,
+    "- The practical tuning target is not separating noise from important; that already works. The hard part is lifting terse but genuinely important logistics without also lifting vague maybe messages.",
+  ].join("\n");
+}
+
+function explainGroup(group) {
+  const precisionNote = group.precision >= 0.9
+    ? "Very high precision means this group's Important feed is trusted, but it may still miss quieter important messages."
+    : group.precision >= 0.8
+      ? "Good precision means most surfaced messages are worth reading, though some maybe/noise items still leak in."
+      : "Lower precision means this group has language that makes maybe/noise messages look actionable.";
+  const recallNote = group.recall >= 0.7
+    ? "Strong recall means the scorer catches most important items in this context."
+    : group.recall >= 0.45
+      ? "Middle recall means CatchUp catches obvious signal but misses a meaningful number of terse or context-heavy messages."
+      : "Low recall means this group uses wording the current rules do not understand well enough.";
+  return `${precisionNote} ${recallNote} False negatives are the first place to inspect if this group feels under-served; false positives are the first place to inspect if its Important tab feels noisy.`;
+}
+
+function explainExamples() {
+  return [
+    "How to use these examples:",
+    "",
+    "- True positives show the patterns the algorithm understands well. These are rule combinations worth preserving during tuning.",
+    "- False positives show messages that would annoy users because they appear in Important despite not being ground-truth important.",
+    "- False negatives are the most valuable tuning examples because they are real misses. They show what users might still have to find manually.",
+    "- Ambiguous calls are not necessarily bugs. They show the gray zone where product judgment matters: should CatchUp be quiet, or should it surface more maybe-useful coordination?",
+    "- Reaction-sensitive rows show whether reactions are acting as validation or accidentally overpowering the text score.",
+  ].join("\n");
+}
+
+function explainReactionImpact(evaluation) {
+  const funny = evaluation.reactionImpact.funnyReactionNoisePromoted;
+  return [
+    "Interpretation:",
+    "",
+    `- ${evaluation.reactionImpact.movedAcrossImportantThreshold} messages crossed into Important because of reactions. These are cases where social validation changed product behavior.`,
+    `- ${funny} noise messages crossed because of funny/hype reactions. ${funny === 0 ? "That is a strong sign the reaction cap is doing its job." : "That is a warning that reactions can still overpower weak text signal."}`,
+    `- Important messages received an average boost of ${score(evaluation.reactionImpact.averageBoostImportant)}, compared with ${score(evaluation.reactionImpact.averageBoostMaybe)} for maybe messages and ${score(evaluation.reactionImpact.averageBoostNoise)} for noise. This is the intended shape: reactions should help real signal more than jokes.`,
+  ].join("\n");
+}
+
+function explainEdgeCases(evaluation) {
+  return [
+    "What this section is proving:",
+    "",
+    "- Edge cases are adversarial by design. A lower score here is not automatically bad; the point is to expose where simple rules lack social context.",
+    `- Edge-case recall at ${pct(evaluation.edgeCaseMetrics.recall)} shows how often the engine catches non-obvious important messages such as slang, casual commands, cancellations, or group-specific shorthand.`,
+    `- Edge-case precision at ${pct(evaluation.edgeCaseMetrics.precision)} shows whether tricky joke messages with important-looking words are leaking into Important.`,
+    "- The highest-value misses are casual important messages and context-required messages. These are hard for a single-message rule engine because users often omit the object once everyone in the chat already knows it.",
+  ].join("\n");
+}
+
+function explainScoringInsights(topFalsePositiveRules, topFalseNegativeRules) {
+  const fp = topFalsePositiveRules.slice(0, 3).map((rule) => rule.id).join(", ") || "none";
+  const fn = topFalseNegativeRules.slice(0, 3).map((rule) => rule.id).join(", ") || "none";
+  return [
+    "How to read rule impact:",
+    "",
+    `- False-positive rules (${fp}) are not automatically bad rules. They may also appear in true positives. The question is whether they need more context gates or phrase exceptions.`,
+    `- False-negative rules (${fn}) show rules that fired on missed important messages but did not add enough score to cross the threshold. These are candidates for combo rules, not necessarily larger standalone deltas.`,
+    "- A rule that appears in both true positives and false positives should be tuned carefully. Broadly weakening it may fix noise while damaging recall.",
+  ].join("\n");
+}
+
 function writeReport(scoredRows, evaluation) {
   const falsePositives = scoredRows
     .filter((row) => row.expectedImportance !== "important" && row.finalScore >= IMPORTANT_THRESHOLD)
@@ -968,6 +1063,8 @@ function writeReport(scoredRows, evaluation) {
     "",
     "The algorithm is useful enough for early testing if the product goal is high precision, but it still misses casual important messages and typo/slang variants. The biggest risk is not viral jokes from reactions; reaction caps worked well in this run. The bigger risk is sparse, context-dependent messages that real users understand but rules cannot.",
     "",
+    "In plain English: CatchUp is currently acting like a careful editor, not a maximal safety net. It is fairly good at keeping obvious junk out of Important, but it still needs tuning before users should trust it to catch every actionable detail in a messy chat.",
+    "",
     "## Simulation Methodology",
     "",
     `- Seed: ${SEED}`,
@@ -981,6 +1078,8 @@ function writeReport(scoredRows, evaluation) {
     `- Isolated database: \`${path.relative(ROOT, DB_PATH)}\``,
     "",
     "Messages were generated from group-specific conversation templates plus an explicit adversarial edge-case suite. Every message carries ground truth importance, expected category, scenario tag, and notes. The simulation scores each message twice: once without reactions and once with simulated reactions, so the report can isolate reaction impact.",
+    "",
+    "Ground truth labels mean: `important` should belong in the Important feed, `maybe` is useful context but not necessarily Important, and `noise` should stay out. This matters because a false positive can be either true junk or a maybe-useful message that the product chose to surface too aggressively.",
     "",
     "## Charts",
     "",
@@ -1009,6 +1108,8 @@ function writeReport(scoredRows, evaluation) {
       { label: "FNR", value: (row) => pct(row.falseNegativeRate) },
     ]),
     "",
+    explainOverall(evaluation),
+    "",
     "## Threshold Sensitivity",
     "",
     mdTable(evaluation.thresholdAnalysis, [
@@ -1020,6 +1121,8 @@ function writeReport(scoredRows, evaluation) {
       { label: "False Negatives", value: (row) => row.falseNegatives },
     ]),
     "",
+    explainThresholds(evaluation, bestThreshold),
+    "",
     "## Score By Ground Truth Label",
     "",
     mdTable(evaluation.scoreByLabel, [
@@ -1030,6 +1133,8 @@ function writeReport(scoredRows, evaluation) {
       { label: "Avg Final", value: (row) => score(row.averageFinalScore) },
     ]),
     "",
+    explainScoreBands(evaluation),
+    "",
     "## Group-by-Group Breakdown",
     "",
     ...evaluation.groupMetrics.flatMap((group) => [
@@ -1039,12 +1144,16 @@ function writeReport(scoredRows, evaluation) {
       "",
       `Precision ${pct(group.precision)}, recall ${pct(group.recall)}, category accuracy ${pct(group.categoryAccuracy)}, average score ${score(group.averageScore)}. False positives: ${group.falsePositives}. False negatives: ${group.falseNegatives}.`,
       "",
+      `Finding: ${explainGroup(group)}`,
+      "",
       "Representative messages:",
       "",
       mdTable(scoredRows.filter((row) => row.groupName === group.groupName).slice(0, 4), exampleColumns),
       "",
     ]),
     "## Hardest Groups",
+    "",
+    "These are the groups where the scorer looked weakest in this run. Hard groups usually reveal one of three problems: the group uses domain-specific shorthand, the important messages are too terse for single-message scoring, or maybe/noise messages contain words that look actionable.",
     "",
     mdTable(worstGroups, [
       { label: "Group", value: (row) => row.groupName },
@@ -1057,6 +1166,8 @@ function writeReport(scoredRows, evaluation) {
     ]),
     "",
     "## Message Examples",
+    "",
+    explainExamples(),
     "",
     "### Highest-Scoring True Positives",
     "",
@@ -1086,6 +1197,8 @@ function writeReport(scoredRows, evaluation) {
     "",
     `Reactions moved ${evaluation.reactionImpact.movedAcrossImportantThreshold} messages across the Important threshold. Funny reactions promoted ${evaluation.reactionImpact.funnyReactionNoisePromoted} noise messages across the threshold.`,
     "",
+    explainReactionImpact(evaluation),
+    "",
     mdTable([
       { label: "important", avg: evaluation.reactionImpact.averageBoostImportant },
       { label: "maybe", avg: evaluation.reactionImpact.averageBoostMaybe },
@@ -1098,6 +1211,8 @@ function writeReport(scoredRows, evaluation) {
     "## Edge-Case Analysis",
     "",
     `Edge-case precision is ${pct(evaluation.edgeCaseMetrics.precision)}, recall is ${pct(evaluation.edgeCaseMetrics.recall)}, and category accuracy is ${pct(evaluation.edgeCaseMetrics.categoryAccuracy)}.`,
+    "",
+    explainEdgeCases(evaluation),
     "",
     mdTable(evaluation.edgeCaseMetrics.byTag, [
       { label: "Scenario", value: (row) => row.scenarioTag },
@@ -1113,6 +1228,8 @@ function writeReport(scoredRows, evaluation) {
     mdTable(edgeRows.slice(0, 25), exampleColumns),
     "",
     "## Scoring Insights",
+    "",
+    explainScoringInsights(topFalsePositiveRules, topFalseNegativeRules),
     "",
     "Rules that most often appeared in false positives:",
     "",
