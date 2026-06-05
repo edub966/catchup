@@ -10,7 +10,7 @@ CatchUp should feel like a real social group chat first. The scoring system, Imp
 
 ## Current Status
 
-Sprint 2 is complete enough to pause UI polish and move into Sprint 3.
+Sprint 3 is complete. CatchUp is ready to prepare for a small IRL alpha test focused on whether real users and auditors agree that the app is finding the right signal in messy chat.
 
 The app now includes:
 
@@ -32,7 +32,12 @@ The app now includes:
 - Catch Up tab
 - Important tab with readable labels
 - Internal audit page
-- Rule-based scoring and categorization foundation
+- Rule-based scoring and categorization engine
+- Slang, typo, abbreviation, and phrase-family normalization
+- Social-domain scoring coverage across college/social group contexts
+- Matched-rule explanations for audit/debugging
+- Automated scoring regression tests
+- Deterministic simulation and algorithm evaluation reports
 
 Still intentionally rough:
 
@@ -42,7 +47,7 @@ Still intentionally rough:
 - No push notifications
 - No AI summaries
 - No moderation tools
-- Scoring/categorization still needs serious Sprint 3 work
+- Alpha tester onboarding and audit workflow still need real-world validation
 
 See [ROADMAP.md](./ROADMAP.md) for the broader product plan.
 
@@ -100,6 +105,66 @@ party starts at 9
 8. Open Important to see high-scoring messages.
 9. Leave and rejoin the group to trigger Catch Up behavior.
 10. Open `/audit.html` to inspect scores, matched rules, and manual ratings.
+
+## Alpha Testing Prep
+
+The next product goal is to get CatchUp in front of real alpha testers and collect audit data from actual messy social chats.
+
+Use alpha testing to answer:
+
+- Do users naturally send the kinds of chaotic messages CatchUp was built for?
+- Does the Important tab feel helpful or noisy?
+- Does Catch Up mode help users understand what they missed faster than reading everything?
+- Which important messages are still missed?
+- Which funny, vague, or low-value messages still get promoted?
+- Do matched rules explain scoring well enough for tuning?
+
+Recommended alpha setup:
+
+1. Start the app locally or on a temporary host.
+2. Create a few test groups that resemble real use cases: friend group, social/event group, roommate group, project/class group, club/team group.
+3. Invite testers with group invite codes.
+4. Ask them to use it like a normal group chat, not like a scripted QA form.
+5. Let enough messages accumulate before judging the Important and Catch Up tabs.
+6. Have an internal auditor review `/audit.html` after sessions and label messages as important or not important.
+7. Export audit JSON from the audit page and compare manual labels against scores.
+
+For now, do not optimize around a single tester reaction. The useful data is repeated patterns: consistent false positives, consistent false negatives, confusing categories, and missing slang/domain language.
+
+## Audit Workflow
+
+Open:
+
+```text
+http://localhost:5501/audit.html
+```
+
+For each recent message, review:
+
+- `base`: score from message text alone
+- `boost`: reaction score added after reactions
+- `final`: score used by Important and Catch Up
+- `confidence`: how strongly the rules think they understood the message
+- `category`: predicted signal type
+- `matched rules`: exact scoring reasons, including IDs, labels, and deltas
+
+Manual audit labels:
+
+- `Important`: the message genuinely belongs in the Important feed
+- `Not important`: the message should not have been promoted
+- `Correct category`: use this when the score was reasonable but the category was wrong
+- `Audit notes`: record why a message was missed or falsely promoted
+
+Useful audit notes look like:
+
+```text
+False negative: "be there by 8" mattered but did not mention event name.
+False positive: funny message used "deadline" as a joke.
+Wrong category: ride request scored as event instead of logistics.
+Slang gap: "spkrs" should mean speakers.
+```
+
+After a session, use the audit export to tune `src/scoring.js` and add regression coverage in `test/`.
 
 ## Auth State
 
@@ -192,6 +257,17 @@ Current categories:
 
 Reaction boosts are capped so viral noise does not automatically become important.
 
+Sprint 3.5 added a wider deterministic language layer for:
+
+- slang and abbreviations such as `tmr`, `tn`, `tix`, `mtg`, `spkrs`, `drvr`
+- typo-tolerant high-value terms
+- deadline/payment phrase families
+- event/time phrase families
+- change/cancellation/update phrase families
+- request/help/logistics phrase families
+- group-specific language for social, club, sports, DJ/promoter, project/class, roommate, trip, church, dinner, birthday, and gym contexts
+- false-positive guards for joke phrases using important-looking words
+
 ## Simulation Evaluation
 
 Run the deterministic scoring stress test with:
@@ -214,23 +290,36 @@ work/simulation/reports/algorithm-evaluation.md
 
 Raw exports live in `work/simulation/output/`, including scored messages, threshold analysis, false positives, false negatives, edge-case results, rule impact, and category confusion.
 
-## Sprint 3 Focus
+Latest Sprint 3.5 simulation headline:
 
-Sprint 3 should focus on really building the scoring and categorization algorithm.
+- 4,960 simulated messages
+- 25 social group contexts
+- Precision at Important threshold 65: about 86%
+- Recall at Important threshold 65: about 79%
+- Threshold 60 is plausible for broader beta learning
+- Threshold 65 remains better for a more curated Important feed
+- False-positive trap stress stayed contained in the latest run
 
-High-priority Sprint 3 work:
+Read the generated report:
 
-- Improve `scoreMessage(text)` precision
-- Add stronger category detection
-- Expand and tune matched rules
-- Reduce false positives in Important
-- Better distinguish jokes/noise from logistics, plans, deadlines, and requests
-- Add test fixtures for realistic college/group-chat messages
-- Add automated tests for score thresholds and category output
-- Use audit data to compare algorithm output against manual labels
-- Make reaction boosts smarter without letting funny messages dominate
+```text
+work/simulation/reports/algorithm-evaluation.md
+```
 
-The UI is now good enough to support early testing. The next product risk is whether CatchUp can reliably identify what mattered.
+## Next Steps
+
+Prepare for IRL alpha testing:
+
+- Decide whether testers will run against a local machine, LAN address, tunnel, or temporary hosted instance.
+- Create a short tester script that explains only the basics: join group, chat normally, react/reply normally, check Important and Catch Up after some activity.
+- Create an auditor checklist for reviewing `/audit.html`.
+- Seed a few initial groups if needed, but avoid over-scripting tester behavior.
+- Run `npm test` before each tester session.
+- Run `npm run simulate` after scoring changes to catch regressions.
+- Save exported audit JSON after each alpha session.
+- Turn repeated audit findings into scoring fixtures and regression tests.
+
+The next product risk is no longer "can the scorer handle obvious examples?" It is whether real users produce new shorthand, context-dependent messages, and social noise that the current deterministic language layer does not yet understand.
 
 ## Editing Guide
 
