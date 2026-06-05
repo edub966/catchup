@@ -3,26 +3,26 @@
 <text x="58" y="30" font-family="Arial" font-size="20" font-weight="700" fill="#171717">Precision and Recall by Important Threshold</text>
 <line x1="58" y1="366" x2="860" y2="366" stroke="#d7d0c6"/>
 <line x1="58" y1="52" x2="58" y2="366" stroke="#d7d0c6"/>
-<path d="M 58 124.8691983122363 L 218.4 97.71230502599653 L 378.8 93.42638623326961 L 539.2 94.08936170212766 L 699.6 75.20197044334977 L 860 78.31284916201116" fill="none" stroke="#f04438" stroke-width="4"/>
-<path d="M 58 162.62633451957294 L 218.4 182.36773428232502 L 378.8 196.8944246737841 L 539.2 214.4009489916963 L 699.6 225.94780545670224 L 860 243.82680901542108" fill="none" stroke="#2563eb" stroke-width="4"/>
+<path d="M 58 113.8458075407991 L 218.4 103.56654456654456 L 378.8 95.69050715214564 L 539.2 92.99384825700614 L 699.6 92.90765926986398 L 860 84.88837920489294" fill="none" stroke="#f04438" stroke-width="4"/>
+<path d="M 58 99.76232917409386 L 218.4 110.58348187759952 L 378.8 118.97920380273321 L 539.2 128.68092691622104 L 699.6 139.31550802139037 L 860 147.52465834818776" fill="none" stroke="#2563eb" stroke-width="4"/>
 <text x="680" y="32" font-family="Arial" font-size="13" fill="#f04438">precision</text>
 <text x="770" y="32" font-family="Arial" font-size="13" fill="#2563eb">recall</text>
 <text x="58" y="388" text-anchor="middle" font-family="Arial" font-size="12" fill="#615d57">55</text>
-<circle cx="58" cy="124.8691983122363" r="4" fill="#f04438"/>
-<circle cx="58" cy="162.62633451957294" r="4" fill="#2563eb"/>
+<circle cx="58" cy="113.8458075407991" r="4" fill="#f04438"/>
+<circle cx="58" cy="99.76232917409386" r="4" fill="#2563eb"/>
 <text x="218.4" y="388" text-anchor="middle" font-family="Arial" font-size="12" fill="#615d57">60</text>
-<circle cx="218.4" cy="97.71230502599653" r="4" fill="#f04438"/>
-<circle cx="218.4" cy="182.36773428232502" r="4" fill="#2563eb"/>
+<circle cx="218.4" cy="103.56654456654456" r="4" fill="#f04438"/>
+<circle cx="218.4" cy="110.58348187759952" r="4" fill="#2563eb"/>
 <text x="378.8" y="388" text-anchor="middle" font-family="Arial" font-size="12" fill="#615d57">65</text>
-<circle cx="378.8" cy="93.42638623326961" r="4" fill="#f04438"/>
-<circle cx="378.8" cy="196.8944246737841" r="4" fill="#2563eb"/>
+<circle cx="378.8" cy="95.69050715214564" r="4" fill="#f04438"/>
+<circle cx="378.8" cy="118.97920380273321" r="4" fill="#2563eb"/>
 <text x="539.2" y="388" text-anchor="middle" font-family="Arial" font-size="12" fill="#615d57">70</text>
-<circle cx="539.2" cy="94.08936170212766" r="4" fill="#f04438"/>
-<circle cx="539.2" cy="214.4009489916963" r="4" fill="#2563eb"/>
+<circle cx="539.2" cy="92.99384825700614" r="4" fill="#f04438"/>
+<circle cx="539.2" cy="128.68092691622104" r="4" fill="#2563eb"/>
 <text x="699.6" y="388" text-anchor="middle" font-family="Arial" font-size="12" fill="#615d57">75</text>
-<circle cx="699.6" cy="75.20197044334977" r="4" fill="#f04438"/>
-<circle cx="699.6" cy="225.94780545670224" r="4" fill="#2563eb"/>
+<circle cx="699.6" cy="92.90765926986398" r="4" fill="#f04438"/>
+<circle cx="699.6" cy="139.31550802139037" r="4" fill="#2563eb"/>
 <text x="860" y="388" text-anchor="middle" font-family="Arial" font-size="12" fill="#615d57">80</text>
-<circle cx="860" cy="78.31284916201116" r="4" fill="#f04438"/>
-<circle cx="860" cy="243.82680901542108" r="4" fill="#2563eb"/>
+<circle cx="860" cy="84.88837920489294" r="4" fill="#f04438"/>
+<circle cx="860" cy="147.52465834818776" r="4" fill="#2563eb"/>
 </svg>

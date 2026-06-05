@@ -2,28 +2,28 @@
 <rect width="100%" height="100%" fill="#fffdf9"/>
 <text x="58" y="30" font-family="Arial" font-size="20" font-weight="700" fill="#171717">Average Score by Expected Category</text>
 <line x1="58" y1="364" x2="928" y2="364" stroke="#d7d0c6"/>
-<rect x="63" y="339.3271255063075" width="98.75" height="24.672874493692515" rx="3" fill="#16a34a"/>
-<text x="112.375" y="333.3271255063075" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">6.2</text>
+<rect x="63" y="353.2207198841818" width="98.75" height="10.779280115818237" rx="3" fill="#16a34a"/>
+<text x="112.375" y="347.2207198841818" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">3.3</text>
 <text transform="translate(112.375,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">noise</text>
-<rect x="171.75" y="118.25656959537665" width="98.75" height="245.74343040462335" rx="3" fill="#16a34a"/>
-<text x="221.125" y="112.25656959537665" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">61.4</text>
+<rect x="171.75" y="58.03129119717431" width="98.75" height="305.9687088028257" rx="3" fill="#16a34a"/>
+<text x="221.125" y="52.03129119717431" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">92.8</text>
 <text transform="translate(221.125,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">announcement</text>
-<rect x="280.5" y="115.06925488916681" width="98.75" height="248.9307451108332" rx="3" fill="#16a34a"/>
-<text x="329.875" y="109.06925488916681" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">62.2</text>
+<rect x="280.5" y="121.22224618318916" width="98.75" height="242.77775381681084" rx="3" fill="#16a34a"/>
+<text x="329.875" y="115.22224618318916" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">73.6</text>
 <text transform="translate(329.875,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">request</text>
-<rect x="389.25" y="268.1922221681658" width="98.75" height="95.80777783183422" rx="3" fill="#16a34a"/>
-<text x="438.625" y="262.1922221681658" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">23.9</text>
+<rect x="389.25" y="276.38058851329504" width="98.75" height="87.61941148670498" rx="3" fill="#16a34a"/>
+<text x="438.625" y="270.38058851329504" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">26.6</text>
 <text transform="translate(438.625,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">question</text>
-<rect x="498" y="158.0923904276315" width="98.75" height="205.9076095723685" rx="3" fill="#16a34a"/>
-<text x="547.375" y="152.0923904276315" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">51.4</text>
+<rect x="498" y="140.86695178917668" width="98.75" height="223.13304821082332" rx="3" fill="#16a34a"/>
+<text x="547.375" y="134.86695178917668" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">67.7</text>
 <text transform="translate(547.375,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">logistics</text>
-<rect x="606.75" y="190.4153022886327" width="98.75" height="173.5846977113673" rx="3" fill="#16a34a"/>
-<text x="656.125" y="184.4153022886327" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">43.4</text>
+<rect x="606.75" y="217.43411341958512" width="98.75" height="146.56588658041488" rx="3" fill="#16a34a"/>
+<text x="656.125" y="211.43411341958512" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">44.4</text>
 <text transform="translate(656.125,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">plan</text>
-<rect x="715.5" y="157.61286731415183" width="98.75" height="206.38713268584817" rx="3" fill="#16a34a"/>
-<text x="764.875" y="151.61286731415183" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">51.5</text>
+<rect x="715.5" y="139.81061825521195" width="98.75" height="224.18938174478805" rx="3" fill="#16a34a"/>
+<text x="764.875" y="133.81061825521195" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">68.0</text>
 <text transform="translate(764.875,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">event</text>
 <rect x="824.25" y="52" width="98.75" height="312" rx="3" fill="#16a34a"/>
-<text x="873.625" y="46" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">77.9</text>
+<text x="873.625" y="46" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">94.6</text>
 <text transform="translate(873.625,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">deadline</text>
 </svg>

@@ -2,13 +2,13 @@
 <rect width="100%" height="100%" fill="#fffdf9"/>
 <text x="58" y="30" font-family="Arial" font-size="20" font-weight="700" fill="#171717">Average Final Score by Ground Truth Label</text>
 <line x1="58" y1="364" x2="928" y2="364" stroke="#d7d0c6"/>
-<rect x="63" y="175.6915371696779" width="280" height="188.3084628303221" rx="3" fill="#2563eb"/>
-<text x="203" y="169.6915371696779" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">38.9</text>
+<rect x="63" y="191.63854350855343" width="280" height="172.36145649144657" rx="3" fill="#2563eb"/>
+<text x="203" y="185.63854350855343" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">45.6</text>
 <text transform="translate(203,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">maybe</text>
 <rect x="353" y="52" width="280" height="312" rx="3" fill="#2563eb"/>
-<text x="493" y="46" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">64.5</text>
+<text x="493" y="46" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">82.5</text>
 <text transform="translate(493,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">important</text>
-<rect x="643" y="336.6854189274353" width="280" height="27.31458107256472" rx="3" fill="#2563eb"/>
-<text x="783" y="330.6854189274353" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">5.6</text>
+<rect x="643" y="354.10934032973023" width="280" height="9.890659670269763" rx="3" fill="#2563eb"/>
+<text x="783" y="348.10934032973023" text-anchor="middle" font-family="Arial" font-size="11" fill="#171717">2.6</text>
 <text transform="translate(783,380) rotate(45)" text-anchor="start" font-family="Arial" font-size="11" fill="#615d57">noise</text>
 </svg>

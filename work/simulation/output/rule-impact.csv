@@ -1,38 +1,51 @@
 id,label,category,delta,truePositive,falsePositive,falseNegative,trueNegative
-question.intent,Asks a planning or logistics question,question,10,35,65,40,623
-logistics.supplies,Mentions supplies or things to bring,logistics,25,45,63,1,107
-request.can-someone,Asks whether someone can handle something concrete,request,24,39,63,27,0
-request.bring-supplies,Asks someone to bring specific supplies,request,14,39,63,0,0
-time.relative,"Mentions today, tonight, tomorrow, or this week",event,8,101,4,25,186
-logistics.transport,"Mentions rides, drivers, or transportation",logistics,20,82,4,9,117
-commitment.availability,Shares concrete availability or commitment,plan,22,0,4,0,167
-event.social-anchor,Mentions a social event or meeting,event,12,157,2,27,387
-question.event-context,Asks a question about a social event or meeting,question,8,0,2,0,161
-plan.leaving-meeting,Asks about when or where people are meeting or leaving,plan,20,0,2,0,87
-structure.concrete-details,Has enough concrete detail to be useful later,plan,8,243,0,18,0
-deadline.explicit,Mentions an explicit deadline,deadline,32,190,0,27,37
-time.explicit,Mentions a specific time,event,12,185,0,145,0
-deadline.date-context,Combines deadline language with a date or time,deadline,18,180,0,19,37
-deadline.payment,"Mentions payment, tickets, dues, or forms",deadline,18,154,0,11,48
-event.concrete-time,Combines event language with concrete time information,event,16,140,0,7,0
-time.weekday,Mentions a weekday or date,event,7,136,0,56,101
-request.concrete-need,"Asks for a specific person, item, or help",request,28,85,0,44,0
-announcement.change,"Announces a change, move, cancellation, or reminder",announcement,30,66,0,100,1
-announcement.date-context,Combines an announcement with date or time details,announcement,14,66,0,39,0
-event.starts-time,Gives a start time for an event,event,28,49,0,32,0
-event.meeting-time,"Gives a meeting, chapter, or rush time",event,24,37,0,0,0
-logistics.sober-drivers,Mentions sober drivers,logistics,30,30,0,0,0
-logistics.uber-count,Mentions needing one more person for a ride,logistics,20,17,0,0,0
-request.urgent-tonight,Combines a concrete request with tonight or tomorrow,request,12,16,0,0,0
-request.help-needed,Mentions needing people to help,request,10,4,0,39,0
-logistics.transport-question,Asks who can drive or handle a ride,logistics,12,1,0,7,0
-request.ticket-availability,Asks about available tickets or wristbands,request,18,0,0,0,48
-noise.one-word,One-word or very short reply,noise,-18,0,0,0,368
-noise.laughter,Laughter-only message,noise,-35,0,0,0,67
-noise.vague-short,Short vague message without concrete details,noise,-12,0,0,8,755
-noise.casual-reply,Casual reply with no actionable detail,noise,-28,0,0,0,201
-plan.whos-going,Asks who is going to a plan,plan,20,0,0,0,115
-noise.hype-only,Hype or joke without plan details,noise,-24,0,0,0,169
-noise.emoji-only,Emoji-only message,noise,-35,0,0,0,71
-noise.repeated,Repeated characters or spammy structure,noise,-16,0,0,0,66
-noise.casual-question,Casual question without planning value,noise,-14,0,0,0,36
+logistics.supplies,Mentions supplies or things to bring,logistics,25,170,199,6,73
+logistics.direct-supply-command,"Directly asks people to bring, wear, or grab a concrete object",logistics,28,149,199,6,73
+question.intent,Asks a planning or logistics question,question,10,109,100,35,1073
+question.event-context,"Asks a question about an event, plan, object, or location",question,8,5,100,2,379
+commitment.availability,Shares concrete availability or commitment,plan,22,0,97,0,188
+request.object-action,Combines a request phrase with a concrete object or responsibility,request,10,276,95,14,2
+request.can-someone,Asks whether someone can handle something concrete,request,24,116,95,17,92
+request.bring-supplies,Asks someone to bring specific supplies,request,14,93,95,0,0
+time.relative,"Mentions today, tonight, tomorrow, or this week",event,8,320,10,52,294
+logistics.transport,"Mentions rides, drivers, buses, or transportation",logistics,20,197,10,21,190
+event.social-anchor,"Mentions a social, club, class, team, or roommate domain",event,12,564,5,21,723
+plan.leaving-meeting,Asks about when or where people are meeting or leaving,plan,20,0,5,0,159
+structure.concrete-details,Has enough concrete detail to be useful later,plan,8,694,0,16,64
+time.explicit,Mentions a specific time,event,12,496,0,156,62
+event.concrete-time,Combines domain language with concrete time information,event,16,457,0,3,64
+deadline.explicit,Mentions an explicit deadline,deadline,32,413,0,21,56
+deadline.date-context,Combines deadline language with a date or time,deadline,18,386,0,9,56
+deadline.payment,"Mentions payment, tickets, dues, bills, or deliverables",deadline,18,379,0,1,110
+domain.action-time,Combines domain language with an action and time or location,event,12,360,0,3,64
+announcement.change,"Announces a change, move, cancellation, or reminder",announcement,30,353,0,9,1
+change.concrete-context,"Combines a change or cancellation with event, location, or time context",announcement,24,353,0,9,0
+deadline.object-context,Combines deadline language with a concrete payment or deliverable object,deadline,18,348,0,0,0
+time.weekday,Mentions a weekday or date,event,7,261,0,1,156
+announcement.date-context,Combines an announcement with date or time details,announcement,14,224,0,0,0
+event.starts-time,"Gives a start, doors, set, load-in, or reservation time",event,28,214,0,39,3
+request.concrete-need,"Asks for a specific person, item, or help",request,28,186,0,80,2
+normalization.alias,"Uses recognized slang, typo, or abbreviation aliases",plan,4,163,0,19,245
+event.meeting-time,"Gives a meeting, chapter, practice, shift, or event time",event,24,102,0,7,59
+logistics.supply-context,"Combines bring, wear, or grab with a concrete object and context",logistics,12,68,0,0,0
+announcement.room-location-update,Gives a room or location update,announcement,55,61,0,2,0
+event.arrival-departure,Gives arrival or departure timing,event,34,47,0,28,0
+request.urgent-tonight,Combines a concrete request with tonight or tomorrow,request,12,41,0,7,0
+logistics.sober-drivers,Mentions sober drivers,logistics,30,35,0,3,0
+logistics.uber-count,Mentions needing one more person for a ride,logistics,20,32,0,0,0
+event.compact-production-times,"Gives compact soundcheck, load-in, doors, or set times",event,50,28,0,2,0
+request.help-needed,Mentions needing people to help,request,10,24,0,39,0
+logistics.transport-question,Asks who can drive or handle a ride,logistics,12,10,0,0,0
+request.ticket-availability,Asks about available tickets or wristbands,request,18,0,0,0,92
+noise.ticket-availability-not-deadline,Asks about ticket availability without a deadline,noise,-25,0,0,0,92
+noise.one-word,One-word or very short reply,noise,-18,0,0,0,632
+noise.laughter,Laughter-only message,noise,-35,0,0,0,114
+noise.vague-short,Short vague message without concrete details,noise,-12,0,0,4,1204
+noise.hype-only,Hype or joke without plan details,noise,-24,0,0,0,765
+noise.important-word-joke,Uses important-looking words in a joke or idiom,noise,-38,0,0,0,756
+noise.casual-reply,Casual reply with no actionable detail,noise,-28,0,0,0,354
+plan.whos-going,Asks who is going to a plan,plan,20,0,0,0,178
+noise.empty,Empty message,noise,-50,0,0,0,113
+noise.emoji-only,Emoji-only message,noise,-35,0,0,0,113
+noise.repeated,Repeated characters or spammy structure,noise,-16,0,0,0,107
+noise.casual-question,Casual question without planning value,noise,-14,0,0,0,102

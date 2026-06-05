@@ -13,6 +13,14 @@ const IMPORTANT_THRESHOLD = 65;
 const CATCHUP_THRESHOLD = 60;
 const SEED = 20260604;
 const START_TIME = Date.parse("2026-04-17T16:00:00.000Z");
+const BASELINE_RESULTS = {
+  messages: 2745,
+  groups: 15,
+  precision65: 0.868,
+  recall65: 0.539,
+  categoryAccuracy: 0.874,
+  edgeCaseRecall: 0.278,
+};
 
 const USERS = [
   "Mason", "Tyler", "Chris", "Ava", "Sophia", "Jordan", "Maya", "Nick", "Bella", "Drew",
@@ -36,6 +44,16 @@ const GROUPS = [
   { name: "Intramural Hoops", type: "Sports pickup team", tag: "hoops", style: "game times, jerseys, rides, last-minute cancellations" },
   { name: "House Dinner Crew", type: "Food/social planning chat", tag: "food", style: "groceries, cooking, reservations, who brings what" },
   { name: "Weekend Festival Run", type: "Festival/social trip chat", tag: "festival", style: "tickets, set times, rides, gear, parking, loose hype" },
+  { name: "St. Mark Newman Center", type: "Church/Catholic center group", tag: "church", style: "mass times, retreats, rides, volunteer shifts, service reminders" },
+  { name: "Pre-Med Service Crew", type: "Pre-med volunteering group", tag: "premed", style: "clinic shifts, forms, rides, shadowing deadlines, volunteer asks" },
+  { name: "Senior Design Lab", type: "Engineering lab/project team", tag: "engineering", style: "lab access, parts, demos, deliverables, testing windows" },
+  { name: "Maple Hall 3", type: "Dorm floor chat", tag: "dorm", style: "floor meetings, laundry, packages, RA notices, late-night noise" },
+  { name: "Bracket Weekend", type: "Intramural tournament group", tag: "tournament", style: "brackets, courts, jerseys, tipoff, rides, forfeits" },
+  { name: "Arena Concert Run", type: "Concert/festival group", tag: "concert", style: "tickets, doors, set times, rides, venue entrances" },
+  { name: "Reservation Roulette", type: "Restaurant/dinner reservation group", tag: "restaurant", style: "reservation times, deposits, rides, headcounts, cancellations" },
+  { name: "PCB Spring Break", type: "Spring break/trip planning group", tag: "trip", style: "flights, airbnb, deposits, rides, packing, check-in times" },
+  { name: "Morning Lift Crew", type: "Gym/workout group", tag: "gym", style: "lift times, gym location, rides, cancellations, equipment" },
+  { name: "Ava Birthday Ops", type: "Birthday/event planning group", tag: "birthday", style: "surprises, reservations, supplies, arrival windows, payments" },
 ];
 
 const IMPORTANT_TEMPLATES = {
@@ -147,6 +165,76 @@ const IMPORTANT_TEMPLATES = {
     ["parking pass due by Friday", "deadline", "parking"],
     ["meetup moved to west entrance", "announcement", "location_change"],
   ],
+  church: [
+    ["service project forms due tonight", "deadline", "forms"],
+    ["mass moved to the chapel at 7", "announcement", "location_change"],
+    ["need drivers for retreat Saturday", "logistics", "ride_request"],
+    ["volunteer shift starts at 11", "event", "shift_time"],
+    ["bring canned food to service tomorrow", "logistics", "supplies"],
+  ],
+  premed: [
+    ["clinic signup closes tonight", "deadline", "signup_deadline"],
+    ["need two people for check in at noon", "request", "volunteer"],
+    ["shadowing forms due by Friday", "deadline", "forms"],
+    ["volunteer room changed to 214", "announcement", "room_change"],
+    ["rides leave for hospital at 8am", "logistics", "ride_time"],
+  ],
+  engineering: [
+    ["demo slides due by midnight", "deadline", "deliverable"],
+    ["lab moved to room 118 tonight", "announcement", "room_change"],
+    ["bring the sensor kit tomorrow", "logistics", "equipment"],
+    ["testing window starts at 6", "event", "lab_time"],
+    ["can someone submit the final doc", "request", "deliverable"],
+  ],
+  dorm: [
+    ["floor meeting moved to 8 in the lounge", "announcement", "meeting_change"],
+    ["RA inspection tomorrow at 10am", "event", "inspection"],
+    ["can someone grab trash bags", "request", "supplies"],
+    ["package pickup closes at 5", "deadline", "pickup_deadline"],
+    ["quiet hours start at midnight", "event", "policy_time"],
+  ],
+  tournament: [
+    ["tipoff at 8 on court 3", "event", "game_time"],
+    ["need one more for tipoff", "request", "player_count"],
+    ["bring white jerseys tomorrow", "logistics", "equipment"],
+    ["bracket check in closes at noon", "deadline", "checkin_deadline"],
+    ["game moved to court 2", "announcement", "location_change"],
+  ],
+  concert: [
+    ["doors got pushed to 8", "announcement", "time_change"],
+    ["tickets close tonight", "deadline", "tickets"],
+    ["meet at north entrance by 7", "event", "meet_time"],
+    ["need one more car for the venue", "logistics", "ride_request"],
+    ["set times posted doors at 8", "announcement", "set_times"],
+  ],
+  restaurant: [
+    ["reservation is at 7:45", "event", "reservation"],
+    ["deposit is due by noon", "deadline", "payment"],
+    ["need final headcount tonight", "request", "headcount"],
+    ["dinner moved to Friday", "announcement", "date_change"],
+    ["can someone call the restaurant", "request", "responsibility"],
+  ],
+  trip: [
+    ["airbnb money due Friday", "deadline", "payment"],
+    ["flight leaves at 6am", "event", "departure"],
+    ["need drivers to airport tomorrow", "logistics", "ride_request"],
+    ["check in moved to 3pm", "announcement", "time_change"],
+    ["bring passport if you have one", "logistics", "supplies"],
+  ],
+  gym: [
+    ["lift moved to 7am", "announcement", "time_change"],
+    ["bring bands tomorrow", "logistics", "equipment"],
+    ["need one more for the workout", "request", "headcount"],
+    ["gym closes at 9 tonight", "deadline", "closing_time"],
+    ["meet by the front desk at 6", "event", "meet_time"],
+  ],
+  birthday: [
+    ["birthday dinner reservation at 8", "event", "reservation"],
+    ["venmo for cake by tonight", "deadline", "payment"],
+    ["can someone bring candles", "request", "supplies"],
+    ["surprise moved to the apartment", "announcement", "location_change"],
+    ["arrive by 7 or Ava will see us", "event", "arrival_time"],
+  ],
 };
 
 const MAYBE_MESSAGES = [
@@ -223,6 +311,139 @@ const EDGE_CASES = [
   ["prob set is due tonight", "important", "deadline", "group_specific", "Class-specific deadline"],
   ["practice moved indoors", "important", "announcement", "group_specific", "Sports-specific change"],
 ];
+
+const SLANG_TYPO_CANONICALS = [
+  ["formal tickets are due by midnight tomorrow", "deadline", ["formal tix due midnight tmr", "tix r due by 12 tn", "formal tickets due by midnite tmrw", "send formal money by midnight", "last day for formal tix is tmr"]],
+  ["meeting moved to room 204 tonight", "announcement", ["mtg moved room 204 tn", "meeting got moved to rm 204", "new room is 204 for tonight", "room changed to 204", "we're in 204 now"]],
+  ["can someone bring speakers to the pregame", "request", ["can someone bring spkrs", "anyone got speakers for preg?", "need speakers at pregame", "who can bring the speaker tn", "bring speaker if u have one"]],
+  ["practice moved indoors", "announcement", ["prac moved inside", "practice is indoors tn", "we inside for practice", "field got moved inside", "moved indoors bc rain"]],
+  ["soundcheck at 5, doors at 8", "event", ["soundcheck 5 doors 8", "sc at 5 doors 8", "load in 5 doors 8", "doors got pushed to 8", "set times posted doors at 8"]],
+  ["problem set is due tonight", "deadline", ["prob set due tmr", "pset due tn", "hw due by midnite", "canvas closes tn", "turn in assn by 12"]],
+  ["need sober drivers tonight", "logistics", ["need sober drvr tn", "need sober d 2nite", "need drvrs for formal", "need driverz tonight", "who can sober drive tn"]],
+  ["bring both jerseys tomorrow", "logistics", ["bring both jersies tmr", "bring jersey tmrw", "yall bring jerseys tn?", "bring white and dark jerseys", "need jerseys b4 game"]],
+  ["reservation is at 7:45", "event", ["resy at 745", "restaraunt at 8", "dinner resy 7:45", "reservation got pushed to 8", "be at restaurant by 8"]],
+  ["utilities are due Friday", "deadline", ["utilities due fri", "wifi bill due tmr", "rent due tmrw", "venmo utilities by friday", "send rent money tn"]],
+  ["volunteer shift starts at 11", "event", ["shift starts 11", "table shift at 11", "vol shift moved thurs", "tabling starts at noon", "gbm at 7"]],
+  ["need one more for the Uber", "logistics", ["need 1 more for uber", "need one more for lyft", "got space in uber?", "who has room in car", "need one more car"]],
+];
+
+const DOMAIN_LANGUAGE_STRESS = [
+  ["chapter at 6", "important", "event", "fraternity"],
+  ["risk needs sober drivers by 9", "important", "logistics", "fraternity"],
+  ["pledges meet at the house by 8", "important", "event", "fraternity"],
+  ["wristbands close at midnight", "important", "deadline", "fraternity"],
+  ["lineup posted at noon", "important", "announcement", "fraternity"],
+  ["bid day forms due tonight", "important", "deadline", "sorority"],
+  ["wear white for recruitment at 6", "important", "event", "sorority"],
+  ["sisterhood moved to room 310", "important", "announcement", "sorority"],
+  ["need two people for philanthropy check in", "important", "request", "sorority"],
+  ["signup closes tomorrow", "important", "deadline", "sorority"],
+  ["doors got pushed to 8", "important", "announcement", "dj"],
+  ["load in at 6", "important", "event", "dj"],
+  ["guest list closes tn", "important", "deadline", "dj"],
+  ["need controller at the booth", "important", "request", "dj"],
+  ["set times posted doors at 8", "important", "announcement", "dj"],
+  ["canvas closes at midnight", "important", "deadline", "class"],
+  ["prob set due tmr", "important", "deadline", "class"],
+  ["peer review due friday", "important", "deadline", "class"],
+  ["slides need to be done by 7", "important", "request", "class"],
+  ["meet in lab 118 at 6", "important", "event", "engineering"],
+  ["practice moved indoors", "important", "announcement", "sports"],
+  ["bring cleats tomorrow", "important", "logistics", "sports"],
+  ["bus leaves in 20", "important", "event", "sports"],
+  ["tipoff at 8 court 3", "important", "event", "sports"],
+  ["need one more for tipoff", "important", "request", "sports"],
+  ["rent is due tomorrow", "important", "deadline", "roommate"],
+  ["maintenance coming at 9am", "important", "event", "roommate"],
+  ["inspection moved to thursday", "important", "announcement", "roommate"],
+  ["wifi bill due fri", "important", "deadline", "roommate"],
+  ["can someone grab trash bags", "important", "request", "roommate"],
+  ["mass moved to chapel at 7", "important", "announcement", "church"],
+  ["retreat forms due tonight", "important", "deadline", "church"],
+  ["need drivers for service saturday", "important", "logistics", "church"],
+  ["volunteer shift starts at 11", "important", "event", "church"],
+  ["bring canned food tomorrow", "important", "logistics", "church"],
+  ["clinic signup closes tn", "important", "deadline", "premed"],
+  ["shadowing forms due friday", "important", "deadline", "premed"],
+  ["hospital rides leave at 8am", "important", "logistics", "premed"],
+  ["need people for check in at noon", "important", "request", "premed"],
+  ["volunteer room changed to 214", "important", "announcement", "premed"],
+  ["airbnb money due friday", "important", "deadline", "trip"],
+  ["flight leaves at 6am", "important", "event", "trip"],
+  ["check in moved to 3pm", "important", "announcement", "trip"],
+  ["need drivers to airport tomorrow", "important", "logistics", "trip"],
+  ["bring passport if you have one", "important", "logistics", "trip"],
+  ["venmo for cake by tonight", "important", "deadline", "birthday"],
+  ["arrive by 7 for the surprise", "important", "event", "birthday"],
+  ["can someone bring candles", "important", "request", "birthday"],
+  ["surprise moved to apartment", "important", "announcement", "birthday"],
+  ["reservation deposit due noon", "important", "deadline", "restaurant"],
+];
+
+const FALSE_POSITIVE_STRESS = [
+  "deadline for being washed is tonight",
+  "formal apology incoming",
+  "rush hour traffic sucks",
+  "party animal",
+  "who let him cook?",
+  "why is bro like this?",
+  "need bro to retire",
+  "Friday was insane",
+  "tomorrow gonna be wild",
+  "9 is crazy",
+  "can someone tell Tyler to stop yelling",
+  "bro said formal like he owns the place",
+  "he needs to be stopped",
+  "this fit is formal",
+  "tickets to the downfall",
+  "meeting my downfall rn",
+  "chapter of my villain arc starts tonight",
+  "canvas is my enemy",
+  "practice? never heard of her",
+  "soundcheck for my mental breakdown",
+  "doors at 8 to my downfall",
+  "rent free in his head",
+  "utilities? bro has none",
+  "bring plates for my ego",
+  "need drivers for the struggle bus",
+  "massive L tomorrow",
+  "retreat from my responsibilities",
+  "birthday suit formal",
+  "reservation for one brain cell",
+  "kickoff to being washed",
+];
+
+function expandStressRows() {
+  const slangRows = [];
+  for (const [canonical, category, variants] of SLANG_TYPO_CANONICALS) {
+    for (const text of [canonical, ...variants]) {
+      slangRows.push([text, "important", category, "stress_slang_typo", "Slang or typo stress-test message"]);
+    }
+  }
+  while (slangRows.length < 120) {
+    const [canonical, category, variants] = pick(SLANG_TYPO_CANONICALS);
+    slangRows.push([pick(variants), "important", category, "stress_slang_typo", `Repeated variant of ${canonical}`]);
+  }
+
+  const domainRows = [];
+  for (const [text, importance, category, domain] of DOMAIN_LANGUAGE_STRESS) {
+    domainRows.push([text, importance, category, "stress_domain_language", `Domain language stress test: ${domain}`]);
+  }
+  while (domainRows.length < 170) {
+    const [text, importance, category, domain] = pick(DOMAIN_LANGUAGE_STRESS);
+    domainRows.push([text, importance, category, "stress_domain_language", `Repeated domain variant: ${domain}`]);
+  }
+
+  const trapRows = [];
+  for (const text of FALSE_POSITIVE_STRESS) {
+    trapRows.push([text, "noise", "noise", "stress_false_positive_trap", "Important-looking false-positive trap"]);
+  }
+  while (trapRows.length < 125) {
+    trapRows.push([pick(FALSE_POSITIVE_STRESS), "noise", "noise", "stress_false_positive_trap", "Repeated false-positive trap variant"]);
+  }
+
+  return { slangRows, domainRows, trapRows };
+}
 
 function makeRng(seed) {
   let state = seed >>> 0;
@@ -510,6 +731,35 @@ function generateMessages(groups) {
     globalIndex += 1;
   }
 
+  const expandedStressRows = expandStressRows();
+  const stressRows = [
+    ...expandedStressRows.slangRows,
+    ...expandedStressRows.domainRows,
+    ...expandedStressRows.trapRows,
+  ];
+  for (const [index, [text, importance, category, tag, notes]] of stressRows.entries()) {
+    const group = groups[(index + EDGE_CASES.length) % groups.length];
+    const username = pick(group.members);
+    const message = {
+      id: `stress_${String(index + 1).padStart(4, "0")}`,
+      groupId: group.id,
+      groupName: group.name,
+      groupType: group.type,
+      username,
+      userId: `user_${username.toLowerCase()}`,
+      text,
+      createdAt: iso(globalIndex * 3 + index),
+      replyTo: maybe(0.12) && messages.length ? pick(messages.filter((row) => row.groupId === group.id)).id : null,
+      expectedImportance: importance,
+      expectedCategory: category,
+      scenarioTag: tag,
+      notes,
+    };
+    message.reactions = buildReactions(message, group, globalIndex);
+    messages.push(message);
+    globalIndex += 1;
+  }
+
   return messages;
 }
 
@@ -664,7 +914,10 @@ function evaluate(scoredRows) {
   const funnyPromotedNoise = reactionMovedUp.filter((row) =>
     row.expectedImportance === "noise" && Object.keys(row.reactionCounts).some((reaction) => ["😂", "💀", "🔥"].includes(reaction))
   );
-  const edgeRows = scoredRows.filter((row) => row.id.startsWith("edge_"));
+  const edgeRows = scoredRows.filter((row) => row.id.startsWith("edge_") || row.id.startsWith("stress_"));
+  const slangStressRows = scoredRows.filter((row) => row.scenarioTag === "stress_slang_typo");
+  const domainStressRows = scoredRows.filter((row) => row.scenarioTag === "stress_domain_language");
+  const trapStressRows = scoredRows.filter((row) => row.scenarioTag === "stress_false_positive_trap");
   const ruleStats = ruleImpact(scoredRows);
 
   return {
@@ -683,6 +936,9 @@ function evaluate(scoredRows) {
       maybeTruth: scoredRows.filter((row) => row.expectedImportance === "maybe").length,
       noiseTruth: scoredRows.filter((row) => row.expectedImportance === "noise").length,
       edgeCases: edgeRows.length,
+      slangTypoStress: slangStressRows.length,
+      domainLanguageStress: domainStressRows.length,
+      falsePositiveTraps: trapStressRows.length,
     },
     overall,
     thresholdAnalysis: thresholds,
@@ -709,6 +965,20 @@ function evaluate(scoredRows) {
         recall: metricsFor(rows, IMPORTANT_THRESHOLD).recall,
         categoryAccuracy: rows.filter((row) => row.expectedCategory === row.signalCategory).length / rows.length,
       })),
+    },
+    stressMetrics: {
+      slangTypo: {
+        ...metricsFor(slangStressRows, IMPORTANT_THRESHOLD),
+        categoryAccuracy: slangStressRows.filter((row) => row.expectedCategory === row.signalCategory).length / slangStressRows.length,
+      },
+      domainLanguage: {
+        ...metricsFor(domainStressRows, IMPORTANT_THRESHOLD),
+        categoryAccuracy: domainStressRows.filter((row) => row.expectedCategory === row.signalCategory).length / domainStressRows.length,
+      },
+      falsePositiveTraps: {
+        ...metricsFor(trapStressRows, IMPORTANT_THRESHOLD),
+        categoryAccuracy: trapStressRows.filter((row) => row.expectedCategory === row.signalCategory).length / trapStressRows.length,
+      },
     },
     ruleStats,
   };
@@ -778,7 +1048,7 @@ function exportData(messages, scoredRows, evaluation) {
   writeCsv("category-confusion.csv", evaluation.categoryConfusion, ["expected", "predicted", "count"]);
   const falsePositives = scoredRows.filter((row) => row.expectedImportance !== "important" && row.finalScore >= IMPORTANT_THRESHOLD);
   const falseNegatives = scoredRows.filter((row) => row.expectedImportance === "important" && row.finalScore < IMPORTANT_THRESHOLD);
-  const edgeRows = scoredRows.filter((row) => row.id.startsWith("edge_"));
+  const edgeRows = scoredRows.filter((row) => row.id.startsWith("edge_") || row.id.startsWith("stress_"));
   const columns = Object.keys(flattenForExport(scoredRows[0]));
   writeCsv("false-positives.csv", falsePositives.map(flattenForExport), columns);
   writeCsv("false-negatives.csv", falseNegatives.map(flattenForExport), columns);
@@ -942,10 +1212,14 @@ function explainThresholds(evaluation, bestThreshold) {
 
 function explainScoreBands(evaluation) {
   const byLabel = Object.fromEntries(evaluation.scoreByLabel.map((row) => [row.label, row]));
+  const importantAverage = byLabel.important?.averageFinalScore || 0;
+  const importantInterpretation = importantAverage >= IMPORTANT_THRESHOLD
+    ? `Important messages average ${score(importantAverage)}, which is comfortably above the current threshold. That explains the recall improvement: the wider language layer now lifts many variants that previously sat below Important.`
+    : `Important messages average ${score(importantAverage)}, which sits just below the current threshold. That explains the recall problem: many important messages are close, but not quite high enough.`;
   return [
     "Interpretation:",
     "",
-    `- Important messages average ${score(byLabel.important?.averageFinalScore || 0)}, which sits just below the current threshold. That explains the recall problem: many important messages are close, but not quite high enough.`,
+    `- ${importantInterpretation}`,
     `- Maybe messages average ${score(byLabel.maybe?.averageFinalScore || 0)}, which is comfortably below Important. This is healthy because maybe-useful chatter should not dominate the feed.`,
     `- Noise averages ${score(byLabel.noise?.averageFinalScore || 0)}, so the noise penalties and reaction caps are doing their basic job.`,
     "- The practical tuning target is not separating noise from important; that already works. The hard part is lifting terse but genuinely important logistics without also lifting vague maybe messages.",
@@ -1034,6 +1308,17 @@ function writeReport(scoredRows, evaluation) {
     .sort((a, b) => b.reactionBoost - a.reactionBoost)
     .slice(0, 12);
   const edgeRows = scoredRows.filter((row) => row.id.startsWith("edge_"));
+  const stressRows = scoredRows.filter((row) => row.id.startsWith("stress_"));
+  const slangStressRows = scoredRows.filter((row) => row.scenarioTag === "stress_slang_typo");
+  const domainStressRows = scoredRows.filter((row) => row.scenarioTag === "stress_domain_language");
+  const fixedLikeRows = [...slangStressRows, ...domainStressRows]
+    .filter((row) => row.expectedImportance === "important" && row.finalScore >= IMPORTANT_THRESHOLD)
+    .sort((a, b) => b.finalScore - a.finalScore)
+    .slice(0, 14);
+  const stressFalsePositives = stressRows
+    .filter((row) => row.expectedImportance !== "important" && row.finalScore >= IMPORTANT_THRESHOLD)
+    .sort((a, b) => b.finalScore - a.finalScore)
+    .slice(0, 14);
   const worstGroups = evaluation.groupMetrics.slice(0, 5);
   const bestThreshold = evaluation.thresholdAnalysis
     .map((row) => ({ ...row, f1: row.precision + row.recall ? (2 * row.precision * row.recall) / (row.precision + row.recall) : 0 }))
@@ -1065,6 +1350,39 @@ function writeReport(scoredRows, evaluation) {
     "",
     "In plain English: CatchUp is currently acting like a careful editor, not a maximal safety net. It is fairly good at keeping obvious junk out of Important, but it still needs tuning before users should trust it to catch every actionable detail in a messy chat.",
     "",
+    "## Baseline Comparison",
+    "",
+    mdTable([
+      {
+        label: "Previous simulation",
+        messages: BASELINE_RESULTS.messages,
+        groups: BASELINE_RESULTS.groups,
+        precision: BASELINE_RESULTS.precision65,
+        recall: BASELINE_RESULTS.recall65,
+        categoryAccuracy: BASELINE_RESULTS.categoryAccuracy,
+        edgeRecall: BASELINE_RESULTS.edgeCaseRecall,
+      },
+      {
+        label: "Current wide-net simulation",
+        messages: evaluation.counts.messages,
+        groups: evaluation.counts.groups,
+        precision: evaluation.overall.precision,
+        recall: evaluation.overall.recall,
+        categoryAccuracy: evaluation.categoryAccuracy,
+        edgeRecall: evaluation.edgeCaseMetrics.recall,
+      },
+    ], [
+      { label: "Run", value: (row) => row.label },
+      { label: "Messages", value: (row) => row.messages },
+      { label: "Groups", value: (row) => row.groups },
+      { label: "Precision @65", value: (row) => pct(row.precision) },
+      { label: "Recall @65", value: (row) => pct(row.recall) },
+      { label: "Category Acc", value: (row) => pct(row.categoryAccuracy) },
+      { label: "Edge Recall", value: (row) => pct(row.edgeRecall) },
+    ]),
+    "",
+    "This comparison is intentionally not apples-to-apples: the current run casts a much wider net and adds hundreds of adversarial stress messages. If precision stays healthy while recall rises under a harder dataset, that is evidence the rule-based approach is becoming more viable rather than merely overfit to the first simulation.",
+    "",
     "## Simulation Methodology",
     "",
     `- Seed: ${SEED}`,
@@ -1073,6 +1391,9 @@ function writeReport(scoredRows, evaluation) {
     `- Total messages: ${evaluation.counts.messages}`,
     `- Ground truth: ${evaluation.counts.importantTruth} important, ${evaluation.counts.maybeTruth} maybe, ${evaluation.counts.noiseTruth} noise`,
     `- Explicit edge cases: ${evaluation.counts.edgeCases}`,
+    `- Slang/typo stress messages: ${evaluation.counts.slangTypoStress}`,
+    `- Domain-language stress messages: ${evaluation.counts.domainLanguageStress}`,
+    `- False-positive trap messages: ${evaluation.counts.falsePositiveTraps}`,
     `- Reactions: ${evaluation.counts.reactions}, assigned according to message context`,
     `- Replies: ${evaluation.counts.replies}, assigned to prior messages in the same group`,
     `- Isolated database: \`${path.relative(ROOT, DB_PATH)}\``,
@@ -1227,6 +1548,32 @@ function writeReport(scoredRows, evaluation) {
     "",
     mdTable(edgeRows.slice(0, 25), exampleColumns),
     "",
+    "## Stress-Test Sections",
+    "",
+    "These sections isolate the new wide-net language coverage. They answer a different question than the general simulation: not just whether the algorithm works on average, but whether it survives the exact messy language families that a shallow regex system usually misses.",
+    "",
+    mdTable([
+      { name: "Slang and typo stress", ...evaluation.stressMetrics.slangTypo },
+      { name: "Domain-language stress", ...evaluation.stressMetrics.domainLanguage },
+      { name: "False-positive trap stress", ...evaluation.stressMetrics.falsePositiveTraps },
+    ], [
+      { label: "Stress Set", value: (row) => row.name },
+      { label: "Count", value: (row) => row.truePositives + row.falsePositives + row.trueNegatives + row.falseNegatives },
+      { label: "Precision", value: (row) => pct(row.precision) },
+      { label: "Recall", value: (row) => pct(row.recall) },
+      { label: "False Positives", value: (row) => row.falsePositives },
+      { label: "False Negatives", value: (row) => row.falseNegatives },
+      { label: "Category Acc", value: (row) => pct(row.categoryAccuracy) },
+    ]),
+    "",
+    "### Examples Caught By The Wider Net",
+    "",
+    fixedLikeRows.length ? mdTable(fixedLikeRows, exampleColumns) : "No stress messages crossed the Important threshold.",
+    "",
+    "### New False Positives From The Wider Net",
+    "",
+    stressFalsePositives.length ? mdTable(stressFalsePositives, exampleColumns) : "No stress-set false positives crossed the Important threshold.",
+    "",
     "## Scoring Insights",
     "",
     explainScoringInsights(topFalsePositiveRules, topFalseNegativeRules),
@@ -1281,6 +1628,11 @@ function recommendations(evaluation, falsePositives, falseNegatives) {
     .sort((a, b) => b.f1 - a.f1)[0];
 
   recs.push(`- Keep the Important threshold near **${bestThreshold.threshold}** for the next calibration pass. In this simulation it had the strongest precision/recall balance.`);
+  const threshold60 = evaluation.thresholdAnalysis.find((row) => row.threshold === 60);
+  const threshold65 = evaluation.thresholdAnalysis.find((row) => row.threshold === 65);
+  if (threshold60 && threshold65) {
+    recs.push(`- Threshold 60 vs 65: use **60** for broader beta learning if precision stays above 80% (${pct(threshold60.precision)} in this run), and use **65** for a more curated demo feed (${pct(threshold65.precision)} precision, ${pct(threshold65.recall)} recall).`);
+  }
 
   if (evaluation.reactionImpact.funnyReactionNoisePromoted === 0) {
     recs.push("- Keep the current reaction caps. Funny/high-volume reactions did not promote noise into Important in this run.");
@@ -1307,6 +1659,11 @@ function recommendations(evaluation, falsePositives, falseNegatives) {
 
   recs.push("- Add real audit labels from early testers before adding AI summaries. The simulation is useful pressure, but real chat context will reveal new shorthand and group-specific language.");
   recs.push("- Consider storing a `scenarioTag`-like audit reason in internal tooling so future calibration can group false positives and false negatives by failure mode.");
+  if (evaluation.overall.precision >= 0.85 && evaluation.stressMetrics.falsePositiveTraps.falsePositives <= 3) {
+    recs.push("- Rule/regex still looks viable for Sprint 3.5 because precision remains high under a wider, harder corpus and false-positive traps mostly stay contained. The tradeoff is ongoing dictionary maintenance.");
+  } else {
+    recs.push("- Be honest about the rule/regex ceiling: if precision drops under the wider corpus or traps leak into Important, an LLM classifier may become more attractive than continued regex growth.");
+  }
   return recs;
 }
 
