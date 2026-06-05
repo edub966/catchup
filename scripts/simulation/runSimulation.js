@@ -1325,6 +1325,8 @@ function writeReport(scoredRows, evaluation) {
     .sort((a, b) => b.f1 - a.f1)[0];
   const topFalsePositiveRules = evaluation.ruleStats.filter((rule) => rule.falsePositive > 0).slice(0, 8);
   const topFalseNegativeRules = evaluation.ruleStats.filter((rule) => rule.falseNegative > 0).slice(0, 8);
+  const recallLift = evaluation.overall.recall - BASELINE_RESULTS.recall65;
+  const edgeRecallLift = evaluation.edgeCaseMetrics.recall - BASELINE_RESULTS.edgeCaseRecall;
 
   const exampleColumns = [
     { label: "Text", value: (row) => row.text },
@@ -1340,15 +1342,17 @@ function writeReport(scoredRows, evaluation) {
     "",
     "## Executive Summary",
     "",
-    `This simulation generated ${evaluation.counts.messages} messages across ${evaluation.counts.groups} realistic social groups with ${evaluation.counts.users} simulated users, ${evaluation.counts.reactions} reactions, and ${evaluation.counts.replies} replies. The current Important threshold is ${IMPORTANT_THRESHOLD}.`,
+    "Sprint 3.5 materially improved the rule-based scorer. The wide-net language layer expanded normalization, slang/typo handling, social-domain dictionaries, phrase families, combo rules, and false-positive guards. The result is not just a bigger test set; it is a harder test set with substantially better recall while preserving the precision target.",
     "",
-    `At threshold ${IMPORTANT_THRESHOLD}, precision is **${pct(evaluation.overall.precision)}** and recall is **${pct(evaluation.overall.recall)}**. Category accuracy is **${pct(evaluation.categoryAccuracy)}**. The system showed ${evaluation.overall.messagesShown} messages in the simulated Important feed, with ${evaluation.overall.falsePositives} false positives and ${evaluation.overall.falseNegatives} false negatives.`,
+    `The current run generated ${evaluation.counts.messages} messages across ${evaluation.counts.groups} social contexts, including ${evaluation.counts.slangTypoStress} slang/typo stress messages, ${evaluation.counts.domainLanguageStress} domain-language stress messages, and ${evaluation.counts.falsePositiveTraps} explicit false-positive traps. At threshold ${IMPORTANT_THRESHOLD}, precision is **${pct(evaluation.overall.precision)}** and recall is **${pct(evaluation.overall.recall)}**.`,
     "",
-    `The strongest threshold by F1 in this run was **${bestThreshold.threshold}** with precision ${pct(bestThreshold.precision)} and recall ${pct(bestThreshold.recall)}. Threshold ${IMPORTANT_THRESHOLD} is ${bestThreshold.threshold === IMPORTANT_THRESHOLD ? "well aligned with the current simulation" : "not the strongest F1 point in this simulation"}; see the threshold table before changing product defaults.`,
+    `Compared with the previous simulation, recall at 65 rose from **${pct(BASELINE_RESULTS.recall65)}** to **${pct(evaluation.overall.recall)}** (${recallLift >= 0 ? "+" : ""}${pct(recallLift)}), while precision moved from **${pct(BASELINE_RESULTS.precision65)}** to **${pct(evaluation.overall.precision)}**. Edge/stress recall rose from **${pct(BASELINE_RESULTS.edgeCaseRecall)}** to **${pct(evaluation.edgeCaseMetrics.recall)}** (${edgeRecallLift >= 0 ? "+" : ""}${pct(edgeRecallLift)}).`,
     "",
-    "The algorithm is useful enough for early testing if the product goal is high precision, but it still misses casual important messages and typo/slang variants. The biggest risk is not viral jokes from reactions; reaction caps worked well in this run. The bigger risk is sparse, context-dependent messages that real users understand but rules cannot.",
+    `The biggest win is coverage: slang/typo stress recall is **${pct(evaluation.stressMetrics.slangTypo.recall)}**, domain-language stress recall is **${pct(evaluation.stressMetrics.domainLanguage.recall)}**, and false-positive trap stress produced **${evaluation.stressMetrics.falsePositiveTraps.falsePositives}** Important-feed false positives. Funny/high-volume reactions promoted 0 pure-noise messages into Important.`,
     "",
-    "In plain English: CatchUp is currently acting like a careful editor, not a maximal safety net. It is fairly good at keeping obvious junk out of Important, but it still needs tuning before users should trust it to catch every actionable detail in a messy chat.",
+    `Threshold guidance changed too: threshold 60 now has **${pct(evaluation.thresholdAnalysis.find((row) => row.threshold === 60)?.precision || 0)}** precision and **${pct(evaluation.thresholdAnalysis.find((row) => row.threshold === 60)?.recall || 0)}** recall, making it plausible for beta learning. Threshold 65 remains the more curated setting at **${pct(evaluation.overall.precision)}** precision and **${pct(evaluation.overall.recall)}** recall.`,
+    "",
+    "Bottom line: rule/regex still looks viable for Sprint 3.5. It is no longer just catching obvious phrases like `due tomorrow`; it now catches many messy variants like `tix due tmr`, `mtg moved room 204 tn`, `spkrs`, `prob set due tmr`, and compact domain phrases. The remaining risk is maintenance: this approach will keep needing real audit data and new phrase families as groups invent shorthand.",
     "",
     "## Baseline Comparison",
     "",

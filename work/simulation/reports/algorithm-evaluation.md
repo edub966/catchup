@@ -2,15 +2,17 @@
 
 ## Executive Summary
 
-This simulation generated 4960 messages across 25 realistic social groups with 28 simulated users, 5028 reactions, and 744 replies. The current Important threshold is 65.
+Sprint 3.5 materially improved the rule-based scorer. The wide-net language layer expanded normalization, slang/typo handling, social-domain dictionaries, phrase families, combo rules, and false-positive guards. The result is not just a bigger test set; it is a harder test set with substantially better recall while preserving the precision target.
 
-At threshold 65, precision is **86.1%** and recall is **78.7%**. Category accuracy is **92.6%**. The system showed 1538 messages in the simulated Important feed, with 214 false positives and 359 false negatives.
+The current run generated 4960 messages across 25 social contexts, including 120 slang/typo stress messages, 170 domain-language stress messages, and 125 explicit false-positive traps. At threshold 65, precision is **86.1%** and recall is **78.7%**.
 
-The strongest threshold by F1 in this run was **55** with precision 80.3% and recall 84.8%. Threshold 65 is not the strongest F1 point in this simulation; see the threshold table before changing product defaults.
+Compared with the previous simulation, recall at 65 rose from **53.9%** to **78.7%** (+24.8%), while precision moved from **86.8%** to **86.1%**. Edge/stress recall rose from **27.8%** to **77.3%** (+49.5%).
 
-The algorithm is useful enough for early testing if the product goal is high precision, but it still misses casual important messages and typo/slang variants. The biggest risk is not viral jokes from reactions; reaction caps worked well in this run. The bigger risk is sparse, context-dependent messages that real users understand but rules cannot.
+The biggest win is coverage: slang/typo stress recall is **82.5%**, domain-language stress recall is **72.4%**, and false-positive trap stress produced **0** Important-feed false positives. Funny/high-volume reactions promoted 0 pure-noise messages into Important.
 
-In plain English: CatchUp is currently acting like a careful editor, not a maximal safety net. It is fairly good at keeping obvious junk out of Important, but it still needs tuning before users should trust it to catch every actionable detail in a messy chat.
+Threshold guidance changed too: threshold 60 now has **83.6%** precision and **81.3%** recall, making it plausible for beta learning. Threshold 65 remains the more curated setting at **86.1%** precision and **78.7%** recall.
+
+Bottom line: rule/regex still looks viable for Sprint 3.5. It is no longer just catching obvious phrases like `due tomorrow`; it now catches many messy variants like `tix due tmr`, `mtg moved room 204 tn`, `spkrs`, `prob set due tmr`, and compact domain phrases. The remaining risk is maintenance: this approach will keep needing real audit data and new phrase families as groups invent shorthand.
 
 ## Baseline Comparison
 
