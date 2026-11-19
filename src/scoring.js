@@ -1,3 +1,5 @@
+const { rankingMatch } = require("./ranking");
+const rankingModel = require("./ranking-model.json");
 const { evidence } = require("./calibration");
 const calibratedWeights = require("./calibrated-weights.json");
 const IMPORTANT_SIGNAL_FLOOR = 60;
@@ -399,11 +401,15 @@ function scoreReactions(reactionCounts, baseScore) {
   return clamp(Math.min(rawBoost, cap), 0, cap);
 }
 
-function scoreWithWeights(text, reactionCounts = {}, weights = calibratedWeights) {
+function scoreWithWeights(text, reactionCounts = {}, weights = calibratedWeights, model = null) {
   const cleanText = String(text || "").normalize("NFKC").trim();
   const matchedRules = getMatches(cleanText);
   if (Object.keys(weights).length) {
     matchedRules.push(...getCalibrationMatches(cleanText, weights));
+  }
+  if (model) {
+    const match = rankingMatch(normalizeText(cleanText), matchedRules, getBaseScore(matchedRules), model);
+    if (match) matchedRules.push(match);
   }
   const baseScore = getBaseScore(matchedRules);
   const reactionBoost = scoreReactions(reactionCounts, baseScore);
@@ -439,7 +445,7 @@ function totalDelta(matches) {
 }
 
 function scoreMessage(text, reactionCounts) {
-  return scoreWithWeights(text, reactionCounts, calibratedWeights);
+  return scoreWithWeights(text, reactionCounts, calibratedWeights, rankingModel);
 }
 
 module.exports = {
