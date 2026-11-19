@@ -72,5 +72,11 @@ const fullModel = fit(rows);
 if (process.argv.includes("--fit")) {
   fs.writeFileSync(modelPath, JSON.stringify(fullModel, null, 2) + "\n");
 } else {
-  assert.deepEqual(fullModel, JSON.parse(fs.readFileSync(modelPath, "utf8")));
+  const saved = JSON.parse(fs.readFileSync(modelPath, "utf8"));
+  assert.deepEqual(Object.keys(fullModel.weights).sort(), Object.keys(saved.weights).sort());
+  // exp() can differ by a few ULPs across CPU architectures and Node releases.
+  assert.ok(Math.abs(fullModel.bias - saved.bias) < 1e-12);
+  for (const [term, value] of Object.entries(fullModel.weights)) {
+    assert.ok(Math.abs(value - saved.weights[term]) < 1e-12, term);
+  }
 }
