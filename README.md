@@ -10,7 +10,7 @@ CatchUp should feel like a real social group chat first. The scoring system, Imp
 
 ## Message scoring calibration
 
-The current scorer adds five fitted, explainable indicators to the summer rules. At the Important cutoff of 65, replaying the original 4,960 synthetic messages finds 58 more labeled-important messages with the same false-positive count. In eight separately written synthetic conversations, the updated scorer finds 18 of 24 important messages and surfaces two false alarms. Human pilot results are still pending.
+CatchUp combines explainable rules with a small logistic model for borderline messages. On the 4,960-message synthetic replay, the summer rules found 1,324 important messages, the first calibration found 1,382, and the ranked scorer found 1,474. Each surfaced 214 false positives. The replay supplied training templates for the second stage. Across four group-held-out folds with overlapping normalized templates excluded, the ranking stage found 26 more important messages with no additional false positives. The separate eight-thread challenge stayed at 18 of 24 important messages and two false positives. Human pilot results are pending.
 
 Run `npm test`, `npm run simulate`, then `npm run evaluate` on Node 24 or newer. To score a local export from the audit page, run `npm run evaluate -- /path/to/catchup-audit.json`. Only manually rated messages enter that comparison. The evaluator reads the export locally. Older exports omit reaction counts and are evaluated on text alone.
 

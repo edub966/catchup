@@ -202,7 +202,7 @@ function persistScore(messageId, score) {
   );
 }
 
-refreshStoredScores(db, "calibration-v1", (id, text) => {
+refreshStoredScores(db, "calibration-ranking-v2", (id, text) => {
   persistScore(id, scoreMessage(text, getReactionCounts(id)));
 });
 
