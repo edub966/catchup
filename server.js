@@ -6,6 +6,10 @@ const { Server } = require("socket.io");
 const { createDatabase } = require("./src/db");
 const { scoreMessage } = require("./src/scoring");
 
+const { refreshStoredScores } = require("./src/rescore");
+
+const { saveAudit } = require("./src/audit");
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
@@ -197,6 +201,10 @@ function persistScore(messageId, score) {
     nowIso()
   );
 }
+
+refreshStoredScores(db, "calibration-v1", (id, text) => {
+  persistScore(id, scoreMessage(text, getReactionCounts(id)));
+});
 
 function hydrateMessage(row) {
   if (!row) return null;
@@ -472,17 +480,22 @@ app.get("/api/audit/messages", (req, res) => {
         message_scores.signal_confidence,
         message_scores.matched_rules,
         signal_audits.manual_rating,
-        signal_audits.corrected_category
+        signal_audits.corrected_category,
+        signal_audits.notes
       FROM messages
       JOIN users ON users.id = messages.user_id
       LEFT JOIN message_scores ON message_scores.message_id = messages.id
-      LEFT JOIN signal_audits ON signal_audits.message_id = messages.id
+      LEFT JOIN signal_audits ON signal_audits.id = (
+        SELECT id FROM signal_audits WHERE message_id = messages.id
+        ORDER BY updated_at DESC, id DESC LIMIT 1
+      )
       ORDER BY messages.created_at DESC
       LIMIT 200
     `)
     .all()
     .map((row) => ({
       ...row,
+      reaction_counts: getReactionCounts(row.id),
       appeared_in_important: row.final_score >= IMPORTANT_THRESHOLD,
       appeared_in_catchup: row.final_score >= CATCHUP_THRESHOLD,
       matched_rules: row.matched_rules ? JSON.parse(row.matched_rules) : [],
@@ -492,33 +505,7 @@ app.get("/api/audit/messages", (req, res) => {
 });
 
 app.post("/api/audit/messages/:messageId", (req, res) => {
-  const now = nowIso();
-  db.prepare(`
-    INSERT INTO signal_audits (
-      id,
-      message_id,
-      manual_rating,
-      corrected_category,
-      notes,
-      created_at,
-      updated_at
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-    ON CONFLICT(message_id) DO UPDATE SET
-      manual_rating = excluded.manual_rating,
-      corrected_category = excluded.corrected_category,
-      notes = excluded.notes,
-      updated_at = excluded.updated_at
-  `).run(
-    randomUUID(),
-    req.params.messageId,
-    req.body.manualRating || null,
-    req.body.correctedCategory || null,
-    req.body.notes || null,
-    now,
-    now
-  );
-
+  saveAudit(db, req.params.messageId, req.body);
   res.json({ ok: true });
 });
 

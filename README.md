@@ -8,6 +8,14 @@ The product bet is simple:
 
 CatchUp should feel like a real social group chat first. The scoring system, Important feed, Catch Up view, and audit tools exist to prove whether the app can find what mattered inside messy conversation.
 
+## Message scoring calibration
+
+The current scorer adds five fitted, explainable indicators to the summer rules. At the Important cutoff of 65, replaying the original 4,960 synthetic messages finds 58 more labeled-important messages with the same false-positive count. In eight separately written synthetic conversations, the updated scorer finds 18 of 24 important messages and surfaces two false alarms. Human pilot results are still pending.
+
+Run `npm test`, `npm run simulate`, then `npm run evaluate` on Node 24 or newer. To score a local export from the audit page, run `npm run evaluate -- /path/to/catchup-audit.json`. Only manually rated messages enter that comparison. The evaluator reads the export locally. Older exports omit reaction counts and are evaluated on text alone.
+
+[Calibration method, paired results, and remaining errors](./scripts/calibration/RESULTS.md)
+
 ## Current Status
 
 Sprint 3 is complete. CatchUp is ready to prepare for a small IRL alpha test focused on whether real users and auditors agree that the app is finding the right signal in messy chat.
@@ -290,7 +298,7 @@ work/simulation/reports/algorithm-evaluation.md
 
 Raw exports live in `work/simulation/output/`, including scored messages, threshold analysis, false positives, false negatives, edge-case results, rule impact, and category confusion.
 
-Latest Sprint 3.5 simulation headline:
+Historical Sprint 3.5 baseline (before fitted calibration):
 
 - 4,960 simulated messages
 - 25 social group contexts
