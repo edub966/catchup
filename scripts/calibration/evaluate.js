@@ -44,7 +44,7 @@ function main() {
   console.log("|---|---:|---:|---|---:|---:|---:|---:|---:|");
   for (const [suite, rows] of Object.entries(datasets)) {
     for (const cutoff of [60, 65]) {
-      for (const [name, scorer] of [["Summer", baseline], ["Calibrated", scoreMessage]]) {
+      for (const [name, scorer] of [["Summer", baseline], ["First pass", (text, reactions) => scoreWithWeights(text, reactions)], ["Ranked", scoreMessage]]) {
         const m = metrics(rows, scorer, cutoff);
         console.log(`| ${suite} | ${rows.length} | ${cutoff} | ${name} | ${m.tp} | ${m.fp} | ${m.fn} | ${(100*m.precision).toFixed(1)}% | ${(100*m.recall).toFixed(1)}% |`);
       }
