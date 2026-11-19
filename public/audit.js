@@ -72,7 +72,7 @@ function renderRows() {
               <option value="${category}" ${row.corrected_category === category ? "selected" : ""}>${category || "Correct category"}</option>
             `).join("")}
           </select>
-          <textarea data-field="notes" placeholder="Audit notes"></textarea>
+          <textarea data-field="notes" placeholder="Audit notes">${escapeHtml(row.notes)}</textarea>
           <button type="button" data-save="${row.id}">Save audit</button>
         </div>
       </section>
@@ -98,11 +98,17 @@ auditList.addEventListener("click", async (event) => {
     notes: card.querySelector("[data-field='notes']").value,
   };
 
-  await fetch(`/api/audit/messages/${button.dataset.save}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  try {
+    const response = await fetch(`/api/audit/messages/${button.dataset.save}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) throw new Error("Save failed");
+  } catch {
+    button.textContent = "Save failed — retry";
+    return;
+  }
 
   button.textContent = "Saved";
   setTimeout(() => {
