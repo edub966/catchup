@@ -1,0 +1,24 @@
+name: Verify CatchUp scoring
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  scoring:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npm test
+      - run: npm run simulate
+      - run: node scripts/calibration/validate-ranking.js
+      - name: Verify chat scoring, reactions and audit round trip
+        run: |
+          node server.js > /tmp/catchup-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" || true; cat /tmp/catchup-server.log' EXIT
+          curl --fail --retry 10 --retry-connrefused --retry-delay 1 http://localhost:5501/ -o /dev/null
+          node scripts/calibration/smoke.js

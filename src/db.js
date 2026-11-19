@@ -1,8 +1,7 @@
 const path = require("path");
 const { DatabaseSync } = require("node:sqlite");
 
-function createDatabase() {
-  const dbPath = path.join(__dirname, "..", "catchup.sqlite");
+function createDatabase(dbPath = path.join(__dirname, "..", "catchup.sqlite")) {
   const db = new DatabaseSync(dbPath);
   db.exec("PRAGMA journal_mode = WAL");
   db.exec("PRAGMA foreign_keys = ON");
@@ -122,6 +121,7 @@ function migrate(db) {
     );
 
     CREATE INDEX IF NOT EXISTS idx_messages_group_created ON messages(group_id, created_at);
+    CREATE INDEX IF NOT EXISTS idx_audit_latest ON signal_audits(message_id, updated_at DESC, id DESC);
     CREATE INDEX IF NOT EXISTS idx_scores_final ON message_scores(final_score);
     CREATE INDEX IF NOT EXISTS idx_reactions_message ON reactions(message_id);
   `);

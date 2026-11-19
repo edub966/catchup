@@ -8,7 +8,9 @@
     "dev": "node server.js",
     "test": "node --test \"test/**/*.test.js\"",
     "simulate": "node scripts/simulation/runSimulation.js",
-    "report": "node scripts/simulation/runSimulation.js"
+    "report": "node scripts/simulation/runSimulation.js",
+    "calibrate": "node scripts/calibration/train.js",
+    "evaluate": "node scripts/calibration/evaluate.js"
   },
   "dependencies": {
     "express": "^4.19.2",

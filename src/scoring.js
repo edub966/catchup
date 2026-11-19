@@ -1,3 +1,7 @@
+const { rankingMatch } = require("./ranking");
+const rankingModel = require("./ranking-model.json");
+const { evidence } = require("./calibration");
+const calibratedWeights = require("./calibrated-weights.json");
 const IMPORTANT_SIGNAL_FLOOR = 60;
 
 const REACTION_BOOSTS = {
@@ -397,9 +401,16 @@ function scoreReactions(reactionCounts, baseScore) {
   return clamp(Math.min(rawBoost, cap), 0, cap);
 }
 
-function scoreMessage(text, reactionCounts = {}) {
+function scoreWithWeights(text, reactionCounts = {}, weights = calibratedWeights, model = null) {
   const cleanText = String(text || "").normalize("NFKC").trim();
   const matchedRules = getMatches(cleanText);
+  if (Object.keys(weights).length) {
+    matchedRules.push(...getCalibrationMatches(cleanText, weights));
+  }
+  if (model) {
+    const match = rankingMatch(normalizeText(cleanText), matchedRules, getBaseScore(matchedRules), model);
+    if (match) matchedRules.push(match);
+  }
   const baseScore = getBaseScore(matchedRules);
   const reactionBoost = scoreReactions(reactionCounts, baseScore);
   const finalScore = clamp(baseScore + reactionBoost);
@@ -416,7 +427,30 @@ function scoreMessage(text, reactionCounts = {}) {
   };
 }
 
+function getCalibrationMatches(text, weights) {
+  const clauses = text.split(/[;.!?\n]|,\s*(?:but|now|instead)\b/i).filter(Boolean);
+  const candidates = clauses.map(clause => evidence(normalizeText(clause))
+    .filter(match => weights[match.id])
+    .map(match => ({...match, delta: weights[match.id], points: weights[match.id]})));
+  if (candidates.length === 1) return candidates[0];
+  // Repetition should not multiply a bonus. A current instruction in another
+  // clause can also stand on its original rules even without a fitted bonus.
+  return candidates.filter((matches, index) =>
+    matches.length || getBaseScore(getMatches(clauses[index])) >= IMPORTANT_SIGNAL_FLOOR
+  ).sort((a, b) => totalDelta(b) - totalDelta(a))[0] || [];
+}
+
+function totalDelta(matches) {
+  return matches.reduce((sum, match) => sum + match.delta, 0);
+}
+
+function scoreMessage(text, reactionCounts) {
+  return scoreWithWeights(text, reactionCounts, calibratedWeights, rankingModel);
+}
+
 module.exports = {
+  normalizeText,
+  scoreWithWeights,
   REACTION_BOOSTS,
   scoreMessage,
 };
